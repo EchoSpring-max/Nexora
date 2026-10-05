@@ -26,15 +26,14 @@ import { classNameFactory } from "@utils/css";
 import { Margins } from "@utils/margins";
 import { isAnyPluginDev } from "@utils/misc";
 import { relaunch } from "@utils/native";
-import { Alerts, GuildMemberStore, React, useMemo, UserStore } from "@webpack/common";
+import { Alerts, GuildMemberStore, React, UserStore } from "@webpack/common";
 
 import { DonateButtonComponent } from "./DonateButton";
 import { MacOSVibrancySettings } from "./MacVibrancySettings";
 import { NotificationSection } from "./NotificationSettings";
 import { WindowsMaterialSettings } from "./WindowsMaterialSettings";
 
-const DEFAULT_DONATE_IMAGE = "https://cdn.discordapp.com/emojis/1026533090627174460.png";
-const SHIGGY_DONATE_IMAGE = DEFAULT_DONATE_IMAGE;
+const SHIGGY_DONATE_IMAGE = "https://cdn.discordapp.com/emojis/1026533090627174460.png";
 
 const VENNIE_DONATOR_IMAGE = "https://cdn.discordapp.com/emojis/1238120638020063377.png";
 const COZY_CONTRIB_IMAGE = "https://cdn.discordapp.com/emojis/1026533070955872337.png";
@@ -156,11 +155,6 @@ function Switches() {
 }
 
 function EquicordSettings() {
-    const donateImage = useMemo(() =>
-        Math.random() > 0.5 ? DEFAULT_DONATE_IMAGE : SHIGGY_DONATE_IMAGE,
-        []
-    );
-
     const user = UserStore?.getCurrentUser();
 
     return (
@@ -184,14 +178,12 @@ function EquicordSettings() {
                 </SpecialCard>
             ) : (
                 <SpecialCard
-                    title="Support the Project"
-                    description="Please consider supporting the development of Nexora by donating!"
-                    cardImage={donateImage}
+                    title="Thanks for choosing Nexora"
+                    description="Make Discord yours with plugins, themes, and settings that fit you."
+                    cardImage={SHIGGY_DONATE_IMAGE}
                     backgroundImage={DONOR_BACKGROUND_IMAGE}
                     backgroundColor="#c3a3ce"
-                >
-                    <DonateButtonComponent />
-                </SpecialCard>
+                />
             )}
             {isAnyPluginDev(user?.id) && (
                 <SpecialCard
