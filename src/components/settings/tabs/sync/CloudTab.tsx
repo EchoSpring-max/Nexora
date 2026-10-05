@@ -38,8 +38,12 @@ import { Alerts, SearchableSelect, Select, useState } from "@webpack/common";
 
 const ICON_STYLE: React.CSSProperties = { width: 20, height: 20, borderRadius: 4, verticalAlign: "middle" };
 
+function NexoraIcon() {
+    return <img src="https://raw.githubusercontent.com/EchoSpring-max/Nexora/main/browser/icon.png" alt="Nexora" style={ICON_STYLE} />;
+}
+
 function EquicordIcon() {
-    return <img src="https://equicord.org/assets/favicon.png" alt="Nexora" style={ICON_STYLE} />;
+    return <img src="https://equicord.org/assets/favicon.png" alt="Equicord" style={ICON_STYLE} />;
 }
 
 function VencordIcon() {
@@ -59,7 +63,8 @@ function validateUrl(url: string) {
 }
 
 const cloudBackendOptions = [
-    { label: "Nexora Cloud", value: "https://cloud.equicord.org/" },
+    { label: "Nexora Cloud", value: "https://cloud.nexoraclient.space/" },
+    { label: "Equicord Cloud", value: "https://cloud.equicord.org/" },
     { label: "Vencord Cloud", value: "https://api.vencord.dev/" }
 ];
 
@@ -119,7 +124,7 @@ function CloudTab() {
 
             <Heading className={Margins.top20}>Cloud Backend</Heading>
             <Paragraph className={Margins.bottom16}>
-                Choose which cloud backend to use for storing your settings. You can switch between Nexora's and Vencord's cloud services, or use a self-hosted instance.
+                Choose which cloud backend to use for storing your settings. You can switch between Nexora, Equicord, and Vencord cloud services, or use a self-hosted instance.
             </Paragraph>
 
             <div className={Margins.bottom8}>
@@ -128,7 +133,11 @@ function CloudTab() {
                     value={cloudBackendOptions.find(o => o.value === cloud.url)?.value}
                     onChange={v => changeUrl(v)}
                     closeOnSelect={true}
-                    renderOptionPrefix={o => o?.value?.includes("equicord") ? <EquicordIcon /> : <VencordIcon />}
+                    renderOptionPrefix={o => o?.value?.includes("nexoraclient")
+                        ? <NexoraIcon />
+                        : o?.value?.includes("equicord")
+                            ? <EquicordIcon />
+                            : <VencordIcon />}
                 />
             </div>
 
