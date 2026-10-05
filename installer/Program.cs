@@ -6,17 +6,13 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Windows.Forms;
+using Microsoft.Win32;
 
 const string ProductName = "Nexora";
 const string ModDirectoryName = "Nexora";
 const string EmbeddedAsarName = "Nexora.desktop.asar";
 
-var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-var channels = new[] {
-    new DiscordChannel("Stable", Path.Combine(localAppData, "Discord")),
-    new DiscordChannel("PTB", Path.Combine(localAppData, "DiscordPTB")),
-    new DiscordChannel("Canary", Path.Combine(localAppData, "DiscordCanary"))
-};
+var channels = DiscoverDiscordChannels();
 
 try {
     if (!OperatingSystem.IsWindows())
@@ -89,16 +85,108 @@ static DiscordChannel SelectChannel(IEnumerable<DiscordChannel> channels, string
     }
 
     if (installed.Length == 0)
-        return SelectCustomDiscordDirectory();
+        return SelectDiscordExecutable();
     if (installed.Length == 1)
         return installed[0];
 
     return SelectInstalledChannel(installed);
 }
 
-static DiscordChannel SelectCustomDiscordDirectory() {
+static DiscordChannel[] DiscoverDiscordChannels() {
+    var channels = new List<DiscordChannel>();
+    var seenDirectories = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+    var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+    var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+    var programFilesX86 = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86);
+
+    AddDiscordDirectory(channels, seenDirectories, "Stable", Path.Combine(localAppData, "Discord"));
+    AddDiscordDirectory(channels, seenDirectories, "PTB", Path.Combine(localAppData, "DiscordPTB"));
+    AddDiscordDirectory(channels, seenDirectories, "Canary", Path.Combine(localAppData, "DiscordCanary"));
+    AddDiscordDirectory(channels, seenDirectories, "Stable", Path.Combine(programFiles, "Discord"));
+    AddDiscordDirectory(channels, seenDirectories, "Stable", Path.Combine(programFilesX86, "Discord"));
+
+    foreach (var executable in FindDiscordExecutablesInRegistry()) {
+        var directory = FindDiscordInstallDirectory(executable);
+        if (directory is not null)
+            AddDiscordDirectory(channels, seenDirectories, "Detected Discord", directory);
+    }
+
+    foreach (var process in Process.GetProcessesByName("Discord")) {
+        try {
+            var directory = FindDiscordInstallDirectory(process.MainModule?.FileName);
+            if (directory is not null)
+                AddDiscordDirectory(channels, seenDirectories, "Running Discord", directory);
+        } catch {
+            // Some processes do not expose their executable path to this process.
+        } finally {
+            process.Dispose();
+        }
+    }
+
+    return channels.ToArray();
+}
+
+static void AddDiscordDirectory(List<DiscordChannel> channels, HashSet<string> seenDirectories, string id, string directory) {
+    if (!Directory.Exists(directory) || !Directory.EnumerateDirectories(directory, "app-*").Any()) return;
+    var fullPath = Path.GetFullPath(directory);
+    if (seenDirectories.Add(fullPath))
+        channels.Add(new DiscordChannel(id, fullPath));
+}
+
+static IEnumerable<string> FindDiscordExecutablesInRegistry() {
+    const string uninstallPath = @"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall";
+    var executables = new List<string>();
+    foreach (var hive in new[] { RegistryHive.CurrentUser, RegistryHive.LocalMachine }) {
+        foreach (var view in new[] { RegistryView.Registry64, RegistryView.Registry32 }) {
+            RegistryKey? uninstall = null;
+            try {
+                uninstall = RegistryKey.OpenBaseKey(hive, view).OpenSubKey(uninstallPath);
+                if (uninstall is null) continue;
+                foreach (var name in uninstall.GetSubKeyNames()) {
+                    using var entry = uninstall.OpenSubKey(name);
+                    if (entry is null) continue;
+                    var displayName = entry.GetValue("DisplayName") as string;
+                    if (displayName is null || !displayName.Contains("Discord", StringComparison.OrdinalIgnoreCase)) continue;
+
+                    var installLocation = entry.GetValue("InstallLocation") as string;
+                    if (!string.IsNullOrWhiteSpace(installLocation)) {
+                        var candidate = Path.Combine(installLocation, "Discord.exe");
+                        if (File.Exists(candidate)) executables.Add(candidate);
+                    }
+
+                    var displayIcon = entry.GetValue("DisplayIcon") as string;
+                    if (!string.IsNullOrWhiteSpace(displayIcon)) {
+                        var candidate = displayIcon.Trim().Trim('"').Split(',')[0];
+                        if (File.Exists(candidate)) executables.Add(candidate);
+                    }
+                }
+            } catch {
+                // Registry probing is best-effort; standard locations remain available.
+            } finally {
+                uninstall?.Dispose();
+            }
+        }
+    }
+    return executables;
+}
+
+static string? FindDiscordInstallDirectory(string? executablePath) {
+    if (string.IsNullOrWhiteSpace(executablePath) || !File.Exists(executablePath)) return null;
+    var directory = new DirectoryInfo(Path.GetDirectoryName(executablePath)!);
+    for (var i = 0; i < 3 && directory is not null; i++, directory = directory.Parent) {
+        try {
+            if (directory.EnumerateDirectories("app-*").Any())
+                return directory.FullName;
+        } catch {
+            return null;
+        }
+    }
+    return null;
+}
+
+static DiscordChannel SelectDiscordExecutable() {
     var result = MessageBox.Show(
-        "Discord was not found in its usual Local AppData folder. Select your Discord installation folder (the folder that contains app-* folders).",
+        "Discord was not found automatically. Select Discord.exe to continue.",
         $"{ProductName} Installer",
         MessageBoxButtons.OKCancel,
         MessageBoxIcon.Information
@@ -106,16 +194,19 @@ static DiscordChannel SelectCustomDiscordDirectory() {
     if (result != DialogResult.OK)
         throw new InvalidOperationException("Discord installation was not selected.");
 
-    using var picker = new FolderBrowserDialog {
-        Description = "Select the Discord installation folder containing app-* folders",
-        UseDescriptionForTitle = true
+    using var picker = new OpenFileDialog {
+        Title = "Select Discord.exe",
+        Filter = "Discord executable (Discord.exe)|Discord.exe|Executable files (*.exe)|*.exe",
+        CheckFileExists = true,
+        Multiselect = false
     };
     if (picker.ShowDialog() != DialogResult.OK)
         throw new InvalidOperationException("Discord installation was not selected.");
-    if (!Directory.EnumerateDirectories(picker.SelectedPath, "app-*").Any())
-        throw new InvalidOperationException("That folder does not contain a Discord app-* installation folder.");
+    var directory = FindDiscordInstallDirectory(picker.FileName);
+    if (directory is null)
+        throw new InvalidOperationException("That file is not inside a Discord app-* installation folder.");
 
-    return new DiscordChannel("Custom", picker.SelectedPath);
+    return new DiscordChannel("Custom", directory);
 }
 
 static DiscordChannel SelectInstalledChannel(DiscordChannel[] installed) {
@@ -219,7 +310,7 @@ static bool AskToStartDiscord() =>
 static void StartDiscord(DiscordChannel channel) {
     var updateExe = Path.Combine(channel.InstallDirectory, "Update.exe");
     if (!File.Exists(updateExe)) {
-        Console.WriteLine("Could not find Discord's launcher. Start Discord normally instead.");
+        ShowInfo("Could not find Discord's launcher. Start Discord normally instead.");
         return;
     }
     Process.Start(new ProcessStartInfo(updateExe, "--processStart Discord.exe") { UseShellExecute = true });
