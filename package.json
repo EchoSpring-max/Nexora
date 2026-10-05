@@ -1,7 +1,7 @@
 {
     "name": "nexora",
     "private": "true",
-    "version": "1.15.10.10",
+    "version": "1.15.10.11",
     "description": "A community Discord client mod with a broad plugin ecosystem",
     "homepage": "https://github.com/EchoSpring-max/Nexora#readme",
     "bugs": {
