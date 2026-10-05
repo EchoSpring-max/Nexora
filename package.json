@@ -16,6 +16,7 @@
     "scripts": {
         "build": "node --require=./scripts/suppressExperimentalWarnings.js scripts/build/build.mjs",
         "buildStandalone": "pnpm build --standalone",
+        "buildInstaller": "pnpm buildStandalone && dotnet publish installer/NexoraInstaller.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishDir=../dist/installer/",
         "buildWeb": "node --require=./scripts/suppressExperimentalWarnings.js scripts/build/buildWeb.mjs",
         "buildWebStandalone": "pnpm buildWeb --standalone",
         "buildReporter": "pnpm buildWebStandalone --reporter --skip-extension",

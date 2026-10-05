@@ -20,6 +20,18 @@ pnpm build
 pnpm inject
 ```
 
+### Windows installer
+
+To create a self-contained Windows patcher executable, run:
+
+```shell
+pnpm buildInstaller
+```
+
+The result is `dist/installer/NexoraInstaller.exe`. Close Discord, launch the executable, choose a Discord channel when asked, and it will retain Discord's original `app.asar` as `_app.asar` before installing Nexora. It will refuse to overwrite another client mod.
+
+Pushes to `main` also build `NexoraInstaller.exe` as a GitHub Actions artifact. Download it from the latest successful **Build Nexora Windows Installer** workflow run.
+
 To build the web extension instead:
 
 ```shell
