@@ -5,22 +5,20 @@
 
 using System.Diagnostics;
 using System.Reflection;
+using System.Windows.Forms;
 
 const string ProductName = "Nexora";
 const string ModDirectoryName = "Nexora";
 const string EmbeddedAsarName = "Nexora.desktop.asar";
 
+var localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 var channels = new[] {
-    new DiscordChannel("Stable", "Discord"),
-    new DiscordChannel("PTB", "DiscordPTB"),
-    new DiscordChannel("Canary", "DiscordCanary")
+    new DiscordChannel("Stable", Path.Combine(localAppData, "Discord")),
+    new DiscordChannel("PTB", Path.Combine(localAppData, "DiscordPTB")),
+    new DiscordChannel("Canary", Path.Combine(localAppData, "DiscordCanary"))
 };
 
 try {
-    Console.Title = $"{ProductName} Installer";
-    Console.WriteLine($"{ProductName} Installer");
-    Console.WriteLine("This installs Nexora into an existing Discord desktop installation.\n");
-
     if (!OperatingSystem.IsWindows())
         throw new InvalidOperationException("The Nexora installer is only supported on Windows.");
 
@@ -55,19 +53,24 @@ try {
             throw new InvalidOperationException("Discord's app.asar was not found. Reinstall Discord, then try again.");
 
         PatchDiscord(resourcesPath, appAsar, backupAsar, appDirectory, stubIndex, modAsar);
-        Console.WriteLine($"\nInstalled {ProductName} into Discord {selectedChannel.DisplayName}.");
+        ShowInfo($"Installed {ProductName} into Discord {selectedChannel.DisplayName}.\n\n" +
+            $"Nexora's files are stored in:\n{modDirectory}\n\n" +
+            "Discord's original app archive was saved as _app.asar.");
     } else {
-        Console.WriteLine($"\nUpdated {ProductName}'s package for Discord {selectedChannel.DisplayName}.");
+        ShowInfo($"Updated {ProductName}'s package for Discord {selectedChannel.DisplayName}.\n\n" +
+            $"Nexora's files are stored in:\n{modDirectory}");
     }
 
-    Console.WriteLine($"Nexora's files are stored in: {modDirectory}");
-    Console.WriteLine("Your original Discord app archive was saved as _app.asar.");
-    Console.Write("\nStart Discord now? [Y/n] ");
-    if (ReadYes())
+    if (AskToStartDiscord())
         StartDiscord(selectedChannel);
 }
 catch (Exception exception) {
-    Console.Error.WriteLine($"\nInstallation failed: {exception.Message}");
+    MessageBox.Show(
+        $"{exception.Message}\n\nNo changes were made if installation did not complete.",
+        $"{ProductName} Installer",
+        MessageBoxButtons.OK,
+        MessageBoxIcon.Error
+    );
     Environment.ExitCode = 1;
 }
 
@@ -86,17 +89,68 @@ static DiscordChannel SelectChannel(IEnumerable<DiscordChannel> channels, string
     }
 
     if (installed.Length == 0)
-        throw new InvalidOperationException("Discord Stable, PTB, or Canary was not found in Local AppData.");
+        return SelectCustomDiscordDirectory();
     if (installed.Length == 1)
         return installed[0];
 
-    Console.WriteLine("Choose a Discord installation:");
-    for (var i = 0; i < installed.Length; i++)
-        Console.WriteLine($"  {i + 1}. {installed[i].DisplayName}");
-    Console.Write("Selection: ");
-    return int.TryParse(Console.ReadLine(), out var selection) && selection >= 1 && selection <= installed.Length
-        ? installed[selection - 1]
-        : throw new InvalidOperationException("No valid Discord installation was selected.");
+    return SelectInstalledChannel(installed);
+}
+
+static DiscordChannel SelectCustomDiscordDirectory() {
+    var result = MessageBox.Show(
+        "Discord was not found in its usual Local AppData folder. Select your Discord installation folder (the folder that contains app-* folders).",
+        $"{ProductName} Installer",
+        MessageBoxButtons.OKCancel,
+        MessageBoxIcon.Information
+    );
+    if (result != DialogResult.OK)
+        throw new InvalidOperationException("Discord installation was not selected.");
+
+    using var picker = new FolderBrowserDialog {
+        Description = "Select the Discord installation folder containing app-* folders",
+        UseDescriptionForTitle = true
+    };
+    if (picker.ShowDialog() != DialogResult.OK)
+        throw new InvalidOperationException("Discord installation was not selected.");
+    if (!Directory.EnumerateDirectories(picker.SelectedPath, "app-*").Any())
+        throw new InvalidOperationException("That folder does not contain a Discord app-* installation folder.");
+
+    return new DiscordChannel("Custom", picker.SelectedPath);
+}
+
+static DiscordChannel SelectInstalledChannel(DiscordChannel[] installed) {
+    using var dialog = new Form {
+        Text = $"{ProductName} Installer",
+        StartPosition = FormStartPosition.CenterScreen,
+        FormBorderStyle = FormBorderStyle.FixedDialog,
+        MaximizeBox = false,
+        MinimizeBox = false,
+        ClientSize = new System.Drawing.Size(380, 185)
+    };
+    var label = new Label {
+        Text = "Choose the Discord installation to patch:",
+        AutoSize = true,
+        Left = 16,
+        Top = 18
+    };
+    var list = new ListBox {
+        Left = 16,
+        Top = 45,
+        Width = 348,
+        Height = 75,
+        DataSource = installed,
+        DisplayMember = nameof(DiscordChannel.DisplayName),
+        SelectedIndex = 0
+    };
+    var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Left = 205, Top = 137, Width = 75 };
+    var select = new Button { Text = "Select", DialogResult = DialogResult.OK, Left = 289, Top = 137, Width = 75 };
+    dialog.Controls.AddRange([label, list, cancel, select]);
+    dialog.CancelButton = cancel;
+    dialog.AcceptButton = select;
+
+    return dialog.ShowDialog() == DialogResult.OK && list.SelectedItem is DiscordChannel selected
+        ? selected
+        : throw new InvalidOperationException("Discord installation was not selected.");
 }
 
 static string FindNewestResourcesDirectory(DiscordChannel channel) {
@@ -151,10 +205,16 @@ static void PatchDiscord(string resources, string appAsar, string backupAsar, st
 static bool IsDiscordRunning() => Process.GetProcesses()
     .Any(process => process.ProcessName.Equals("Discord", StringComparison.OrdinalIgnoreCase));
 
-static bool ReadYes() {
-    var answer = Console.ReadLine();
-    return string.IsNullOrWhiteSpace(answer) || answer.Equals("y", StringComparison.OrdinalIgnoreCase) || answer.Equals("yes", StringComparison.OrdinalIgnoreCase);
-}
+static void ShowInfo(string message) =>
+    MessageBox.Show(message, $"{ProductName} Installer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+static bool AskToStartDiscord() =>
+    MessageBox.Show(
+        "Start Discord now?",
+        $"{ProductName} Installer",
+        MessageBoxButtons.YesNo,
+        MessageBoxIcon.Question
+    ) == DialogResult.Yes;
 
 static void StartDiscord(DiscordChannel channel) {
     var updateExe = Path.Combine(channel.InstallDirectory, "Update.exe");
@@ -165,10 +225,6 @@ static void StartDiscord(DiscordChannel channel) {
     Process.Start(new ProcessStartInfo(updateExe, "--processStart Discord.exe") { UseShellExecute = true });
 }
 
-sealed record DiscordChannel(string Id, string DirectoryName) {
+sealed record DiscordChannel(string Id, string InstallDirectory) {
     public string DisplayName => Id == "Stable" ? "Stable" : Id;
-    public string InstallDirectory => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        DirectoryName
-    );
 }
