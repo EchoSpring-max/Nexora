@@ -33,7 +33,7 @@ export const settingVariables = [
     "{buildNumber} - Discord build number (e.g. 123456)",
     "{buildHash} - Discord build hash (e.g. 123456789)",
     "",
-    "Equicord Variables:",
+    "Nexora Variables:",
     "{equicordIcon} - Equicord icon",
     "{equicordVersion} - Version of Equicord (e.g. 1.0.0)",
     "{equicordHash} - Equicord build hash (e.g. 123456789)",

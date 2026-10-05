@@ -34,7 +34,7 @@ import { NotificationSection } from "./NotificationSettings";
 import { WindowsMaterialSettings } from "./WindowsMaterialSettings";
 
 const DEFAULT_DONATE_IMAGE = "https://cdn.discordapp.com/emojis/1026533090627174460.png";
-const SHIGGY_DONATE_IMAGE = "https://equicord.org/assets/favicon.png";
+const SHIGGY_DONATE_IMAGE = DEFAULT_DONATE_IMAGE;
 
 const VENNIE_DONATOR_IMAGE = "https://cdn.discordapp.com/emojis/1238120638020063377.png";
 const COZY_CONTRIB_IMAGE = "https://cdn.discordapp.com/emojis/1026533070955872337.png";
@@ -171,10 +171,10 @@ function EquicordSettings() {
                     subtitle="Thank you for donating!"
                     description={
                         isEquicordDonor(user?.id) && isVencordDonor(user?.id)
-                            ? "All Vencord users can see your Vencord donor badge, and Equicord users can see your Equicord donor badge. To change your Vencord donor badge, contact @vending.machine. For your Equicord donor badge, make a ticket in Equicord's server."
+                            ? "All Vencord users can see your Vencord donor badge, and Nexora users can see your Nexora supporter badge."
                             : isVencordDonor(user?.id)
                                 ? "All Vencord users can see your badge! You can manage your perks by messaging @vending.machine."
-                                : "All Equicord users can see your badge! You can manage your perks by making a ticket in Equicord's server."
+                                : "All Nexora users can see your supporter badge."
                     }
                     cardImage={VENNIE_DONATOR_IMAGE}
                     backgroundImage={DONOR_BACKGROUND_IMAGE}
@@ -185,7 +185,7 @@ function EquicordSettings() {
             ) : (
                 <SpecialCard
                     title="Support the Project"
-                    description="Please consider supporting the development of Equicord by donating!"
+                    description="Please consider supporting the development of Nexora by donating!"
                     cardImage={donateImage}
                     backgroundImage={DONOR_BACKGROUND_IMAGE}
                     backgroundColor="#c3a3ce"
@@ -197,7 +197,7 @@ function EquicordSettings() {
                 <SpecialCard
                     title="Contributions"
                     subtitle="Thank you for contributing!"
-                    description="Since you've contributed to Equicord you now have a cool new badge!"
+                    description="Since you've contributed to Nexora you now have a cool new badge!"
                     cardImage={COZY_CONTRIB_IMAGE}
                     backgroundImage={CONTRIB_BACKGROUND_IMAGE}
                     backgroundColor="#EDCC87"

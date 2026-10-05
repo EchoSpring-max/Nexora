@@ -180,7 +180,7 @@ async function build(): Promise<void> {
             if (!error) return resolve();
 
             const details = (stderr || stdout || error.message).trim();
-            reject(`Failed to build Equicord${details ? `:\n${details}` : "."}`);
+            reject(`Failed to build Nexora${details ? `:\n${details}` : "."}`);
         });
     });
 }

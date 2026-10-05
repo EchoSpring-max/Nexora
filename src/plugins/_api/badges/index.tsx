@@ -48,7 +48,7 @@ const ContributorBadge: ProfileBadge = {
 
 const EquicordContributorBadge: ProfileBadge = {
     id: "equicord_contributor_badge",
-    description: "Equicord Contributor",
+    description: "Nexora Contributor",
     iconSrc: EQUICORD_CONTRIBUTOR_BADGE,
     position: BadgePosition.START,
     shouldShow: ({ userId }) => shouldShowEquicordContributorBadge(userId),

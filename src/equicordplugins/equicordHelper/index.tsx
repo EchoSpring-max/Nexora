@@ -401,8 +401,8 @@ export default definePlugin({
             if (VC_SUPPORT_CHANNEL_IDS.includes(channelId) && !clicked) {
                 return Alerts.show({
                     title: "Vencord Support Channel Warning",
-                    body: "Before asking for help. Check updates and if this issue is actually caused by Equicord!",
-                    confirmText: "Equicord Support",
+                    body: "Before asking for help, check for updates and confirm that Nexora causes the issue.",
+                    confirmText: "Nexora Support",
                     onConfirm() {
                         NavigationRouter.transitionTo(`/channels/${GUILD_ID}/${SUPPORT_CHANNEL_ID}`);
                     },
