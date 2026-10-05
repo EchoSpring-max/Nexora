@@ -38,6 +38,16 @@ To build the web extension instead:
 pnpm buildWeb
 ```
 
+### macOS and Linux installers
+
+Nexora uses the same desktop package on every operating system. The release page includes `Nexora-macOS.zip` and `Nexora-Linux.zip`; extract the matching archive, fully close Discord, then run the included script with `bash`. It downloads the current Nexora desktop package, backs up Discord's `app.asar` as `_app.asar`, and installs a small launcher stub. Linux Flatpak and Snap Discord installations are not supported.
+
+To package those release archives locally:
+
+```shell
+pnpm buildUnixInstallers
+```
+
 ## Credits and license
 
 Nexora is GPL-3.0-or-later and preserves the original Vencord, Equicord, and Suncord copyright notices and licenses.

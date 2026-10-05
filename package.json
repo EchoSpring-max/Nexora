@@ -1,7 +1,7 @@
 {
     "name": "nexora",
     "private": "true",
-    "version": "1.15.10.9",
+    "version": "1.15.10.10",
     "description": "A community Discord client mod with a broad plugin ecosystem",
     "homepage": "https://github.com/EchoSpring-max/Nexora#readme",
     "bugs": {
@@ -17,6 +17,7 @@
         "build": "node --require=./scripts/suppressExperimentalWarnings.js scripts/build/build.mjs",
         "buildStandalone": "pnpm build --standalone",
         "buildInstaller": "pnpm buildStandalone && dotnet publish installer/NexoraInstaller.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:PublishDir=../dist/installer/",
+        "buildUnixInstallers": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/packageUnixInstallers.ps1",
         "buildWeb": "node --require=./scripts/suppressExperimentalWarnings.js scripts/build/buildWeb.mjs",
         "buildWebStandalone": "pnpm buildWeb --standalone",
         "buildReporter": "pnpm buildWebStandalone --reporter --skip-extension",
