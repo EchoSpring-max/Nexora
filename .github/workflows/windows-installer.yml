@@ -30,10 +30,12 @@ jobs:
             - name: Build installer
               run: pnpm buildInstaller
 
-            - name: Upload NexoraInstaller.exe
+            - name: Upload Nexora release files
               uses: actions/upload-artifact@v4
               with:
-                  name: NexoraInstaller
-                  path: dist/installer/NexoraInstaller.exe
+                  name: NexoraReleaseFiles
+                  path: |
+                      dist/installer/NexoraInstaller.exe
+                      dist/desktop.asar
                   if-no-files-found: error
                   retention-days: 30

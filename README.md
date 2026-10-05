@@ -30,7 +30,7 @@ pnpm buildInstaller
 
 The result is `dist/installer/NexoraInstaller.exe`. Close Discord, launch the executable, choose a Discord channel when asked, and it will retain Discord's original `app.asar` as `_app.asar` before installing Nexora. It will refuse to overwrite another client mod.
 
-Pushes to `main` also build `NexoraInstaller.exe` as a GitHub Actions artifact. Download it from the latest successful **Build Nexora Windows Installer** workflow run.
+Pushes to `main` also build `NexoraInstaller.exe` and `desktop.asar` as a GitHub Actions artifact. Attach both files to a tagged GitHub Release: the installer is for first-time installs, while `desktop.asar` lets the in-client updater download later Nexora updates from the **Updater** settings page or tray menu.
 
 To build the web extension instead:
 
