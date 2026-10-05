@@ -11,6 +11,7 @@ using Microsoft.Win32;
 const string ProductName = "Nexora";
 const string ModDirectoryName = "Nexora";
 const string EmbeddedAsarName = "Nexora.desktop.asar";
+const string EmbeddedIconName = "Nexora.icon.png";
 
 if (!OperatingSystem.IsWindows()) {
     MessageBox.Show("The Nexora installer is only supported on Windows.", "Nexora Installer", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -83,9 +84,10 @@ static void RunInstaller(DiscordChannel[] detectedChannels, string[] args) {
     header.Paint += (_, e) => {
         using var glow = new SolidBrush(Color.FromArgb(70, accent));
         e.Graphics.FillEllipse(glow, 445, -175, 360, 360);
-        using var mark = new SolidBrush(accent);
-        e.Graphics.FillEllipse(mark, 32, 36, 62, 62);
-        TextRenderer.DrawText(e.Graphics, "N", new Font("Segoe UI", 25F, FontStyle.Bold), new Point(50, 47), Color.White);
+        using var iconStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(EmbeddedIconName);
+        using var icon = iconStream is null ? null : Image.FromStream(iconStream);
+        if (icon is not null)
+            e.Graphics.DrawImage(icon, new Rectangle(32, 36, 62, 62));
     };
     var title = new Label { Text = "Welcome to Nexora", AutoSize = true, Location = new Point(117, 40), Font = new Font("Segoe UI", 23F, FontStyle.Bold), ForeColor = text };
     var subtitle = new Label { Text = "A cleaner way to personalize your Discord desktop client.", AutoSize = true, Location = new Point(120, 81), Font = new Font("Segoe UI", 10.5F), ForeColor = muted };

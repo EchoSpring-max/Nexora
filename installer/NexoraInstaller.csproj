@@ -13,5 +13,6 @@
 
   <ItemGroup>
     <EmbeddedResource Include="..\dist\desktop.asar" LogicalName="Nexora.desktop.asar" />
+    <EmbeddedResource Include="..\browser\icon.png" LogicalName="Nexora.icon.png" />
   </ItemGroup>
 </Project>
