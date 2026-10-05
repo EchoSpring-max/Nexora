@@ -12,13 +12,15 @@ const string ProductName = "Nexora";
 const string ModDirectoryName = "Nexora";
 const string EmbeddedAsarName = "Nexora.desktop.asar";
 
-var channels = DiscoverDiscordChannels();
+if (!OperatingSystem.IsWindows()) {
+    MessageBox.Show("The Nexora installer is only supported on Windows.", "Nexora Installer", MessageBoxButtons.OK, MessageBoxIcon.Error);
+    return;
+}
 
-try {
-    if (!OperatingSystem.IsWindows())
-        throw new InvalidOperationException("The Nexora installer is only supported on Windows.");
+ApplicationConfiguration.Initialize();
+RunInstaller(DiscoverDiscordChannels(), args);
 
-    var selectedChannel = SelectChannel(channels, args);
+static string InstallNexora(DiscordChannel selectedChannel) {
     var resourcesPath = FindNewestResourcesDirectory(selectedChannel);
     var appAsar = Path.Combine(resourcesPath, "app.asar");
     var backupAsar = Path.Combine(resourcesPath, "_app.asar");
@@ -49,47 +51,105 @@ try {
             throw new InvalidOperationException("Discord's app.asar was not found. Reinstall Discord, then try again.");
 
         PatchDiscord(resourcesPath, appAsar, backupAsar, appDirectory, stubIndex, modAsar);
-        ShowInfo($"Installed {ProductName} into Discord {selectedChannel.DisplayName}.\n\n" +
-            $"Nexora's files are stored in:\n{modDirectory}\n\n" +
-            "Discord's original app archive was saved as _app.asar.");
+        return $"Installed Nexora into Discord {selectedChannel.DisplayName}.\n\n" +
+            "Your original Discord archive was safely saved as _app.asar.";
     } else {
-        ShowInfo($"Updated {ProductName}'s package for Discord {selectedChannel.DisplayName}.\n\n" +
-            $"Nexora's files are stored in:\n{modDirectory}");
+        return $"Updated Nexora for Discord {selectedChannel.DisplayName}.\n\n" +
+            "You're ready to launch Discord.";
     }
-
-    if (AskToStartDiscord())
-        StartDiscord(selectedChannel);
-}
-catch (Exception exception) {
-    MessageBox.Show(
-        $"{exception.Message}\n\nNo changes were made if installation did not complete.",
-        $"{ProductName} Installer",
-        MessageBoxButtons.OK,
-        MessageBoxIcon.Error
-    );
-    Environment.ExitCode = 1;
 }
 
-static DiscordChannel SelectChannel(IEnumerable<DiscordChannel> channels, string[] args) {
-    var requestedName = args.FirstOrDefault(arg => arg.StartsWith("--channel=", StringComparison.OrdinalIgnoreCase))?
-        .Split('=', 2)[1];
-    var installed = channels.Where(channel => Directory.Exists(channel.InstallDirectory)).ToArray();
+static void RunInstaller(DiscordChannel[] detectedChannels, string[] args) {
+    var background = Color.FromArgb(18, 16, 27);
+    var surface = Color.FromArgb(31, 28, 43);
+    var surfaceAlt = Color.FromArgb(42, 37, 57);
+    var accent = Color.FromArgb(184, 117, 255);
+    var text = Color.FromArgb(244, 241, 251);
+    var muted = Color.FromArgb(176, 168, 192);
 
-    if (requestedName is not null) {
-        var requested = channels.FirstOrDefault(channel => string.Equals(channel.Id, requestedName, StringComparison.OrdinalIgnoreCase));
-        if (requested is null)
-            throw new InvalidOperationException("Unknown channel. Use --channel=stable, --channel=ptb, or --channel=canary.");
-        if (!Directory.Exists(requested.InstallDirectory))
-            throw new InvalidOperationException($"Discord {requested.DisplayName} is not installed for this Windows account.");
-        return requested;
-    }
+    using var form = new Form {
+        Text = "Nexora Setup",
+        StartPosition = FormStartPosition.CenterScreen,
+        ClientSize = new Size(680, 500),
+        MinimumSize = new Size(680, 500),
+        MaximizeBox = false,
+        BackColor = background,
+        ForeColor = text,
+        Font = new Font("Segoe UI", 10F),
+        FormBorderStyle = FormBorderStyle.FixedSingle
+    };
 
-    if (installed.Length == 0)
-        return SelectDiscordExecutable();
-    if (installed.Length == 1)
-        return installed[0];
+    var header = new Panel { Dock = DockStyle.Top, Height = 172, BackColor = surface };
+    header.Paint += (_, e) => {
+        using var glow = new SolidBrush(Color.FromArgb(70, accent));
+        e.Graphics.FillEllipse(glow, 445, -175, 360, 360);
+        using var mark = new SolidBrush(accent);
+        e.Graphics.FillEllipse(mark, 32, 36, 62, 62);
+        TextRenderer.DrawText(e.Graphics, "N", new Font("Segoe UI", 25F, FontStyle.Bold), new Point(50, 47), Color.White);
+    };
+    var title = new Label { Text = "Welcome to Nexora", AutoSize = true, Location = new Point(117, 40), Font = new Font("Segoe UI", 23F, FontStyle.Bold), ForeColor = text };
+    var subtitle = new Label { Text = "A cleaner way to personalize your Discord desktop client.", AutoSize = true, Location = new Point(120, 81), Font = new Font("Segoe UI", 10.5F), ForeColor = muted };
+    var version = new Label { Text = "NEXORA SETUP  •  WINDOWS", AutoSize = true, Location = new Point(34, 127), Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(210, 186, 245) };
+    header.Controls.AddRange([title, subtitle, version]);
 
-    return SelectInstalledChannel(installed);
+    var content = new Panel { Dock = DockStyle.Fill, Padding = new Padding(34, 27, 34, 22), BackColor = background };
+    var label = new Label { Text = "Discord installation", AutoSize = true, Location = new Point(34, 24), Font = new Font("Segoe UI", 11F, FontStyle.Bold), ForeColor = text };
+    var help = new Label { Text = "Nexora detected your Discord installation automatically. Choose another one if needed.", AutoSize = true, Location = new Point(34, 50), ForeColor = muted };
+    var channelPicker = new ComboBox { Location = new Point(34, 82), Width = 474, Height = 40, DropDownStyle = ComboBoxStyle.DropDownList, BackColor = surfaceAlt, ForeColor = text, FlatStyle = FlatStyle.Flat };
+    channelPicker.Items.AddRange(detectedChannels);
+    channelPicker.DisplayMember = nameof(DiscordChannel.DisplayName);
+    if (detectedChannels.Length > 0) channelPicker.SelectedIndex = 0;
+
+    var browse = new Button { Text = "Browse", Location = new Point(520, 81), Size = new Size(126, 42), FlatStyle = FlatStyle.Flat, BackColor = surfaceAlt, ForeColor = text, Cursor = Cursors.Hand };
+    browse.FlatAppearance.BorderColor = Color.FromArgb(85, 77, 104);
+    browse.Click += (_, _) => {
+        try {
+            var selected = SelectDiscordExecutable();
+            channelPicker.Items.Add(selected);
+            channelPicker.SelectedItem = selected;
+        } catch (InvalidOperationException) { }
+    };
+
+    var notice = new Panel { Location = new Point(34, 143), Size = new Size(612, 54), BackColor = Color.FromArgb(33, 29, 47) };
+    var noticeIcon = new Label { Text = "i", TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.FromArgb(216, 185, 255), Location = new Point(14, 16), Size = new Size(20, 20), BackColor = Color.FromArgb(83, 61, 112) };
+    var noticeText = new Label { Text = "Close Discord before installing. Your original app archive is backed up automatically.", Location = new Point(48, 17), AutoSize = true, ForeColor = Color.FromArgb(205, 197, 219) };
+    notice.Controls.AddRange([noticeIcon, noticeText]);
+
+    var launch = new CheckBox { Text = "Launch Discord after setup", AutoSize = true, Checked = true, Location = new Point(34, 216), ForeColor = muted, FlatStyle = FlatStyle.Flat };
+    var status = new Label { Text = detectedChannels.Length > 0 ? "Ready to install" : "Select Discord.exe to continue", AutoSize = true, Location = new Point(34, 257), ForeColor = muted, Font = new Font("Segoe UI", 9F) };
+    var install = new Button { Text = "Install Nexora", Location = new Point(481, 231), Size = new Size(165, 47), FlatStyle = FlatStyle.Flat, BackColor = accent, ForeColor = Color.FromArgb(29, 18, 40), Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
+    install.FlatAppearance.BorderSize = 0;
+    install.Click += async (_, _) => {
+        if (channelPicker.SelectedItem is not DiscordChannel selected) {
+            status.Text = "Choose a Discord installation first.";
+            status.ForeColor = Color.FromArgb(255, 150, 163);
+            return;
+        }
+
+        install.Enabled = false;
+        browse.Enabled = false;
+        channelPicker.Enabled = false;
+        status.Text = "Installing Nexora…";
+        status.ForeColor = Color.FromArgb(218, 190, 255);
+        try {
+            var result = await Task.Run(() => InstallNexora(selected));
+            status.Text = "Setup complete";
+            status.ForeColor = Color.FromArgb(106, 222, 177);
+            install.Text = "Installed ✓";
+            MessageBox.Show(result, "Nexora is ready", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (launch.Checked) StartDiscord(selected);
+        } catch (Exception exception) {
+            status.Text = exception.Message;
+            status.ForeColor = Color.FromArgb(255, 150, 163);
+            install.Enabled = true;
+            browse.Enabled = true;
+            channelPicker.Enabled = true;
+        }
+    };
+
+    content.Controls.AddRange([label, help, channelPicker, browse, notice, launch, status, install]);
+    form.Controls.AddRange([content, header]);
+    Application.Run(form);
 }
 
 static DiscordChannel[] DiscoverDiscordChannels() {
@@ -209,41 +269,6 @@ static DiscordChannel SelectDiscordExecutable() {
     return new DiscordChannel("Custom", directory);
 }
 
-static DiscordChannel SelectInstalledChannel(DiscordChannel[] installed) {
-    using var dialog = new Form {
-        Text = $"{ProductName} Installer",
-        StartPosition = FormStartPosition.CenterScreen,
-        FormBorderStyle = FormBorderStyle.FixedDialog,
-        MaximizeBox = false,
-        MinimizeBox = false,
-        ClientSize = new System.Drawing.Size(380, 185)
-    };
-    var label = new Label {
-        Text = "Choose the Discord installation to patch:",
-        AutoSize = true,
-        Left = 16,
-        Top = 18
-    };
-    var list = new ListBox {
-        Left = 16,
-        Top = 45,
-        Width = 348,
-        Height = 75,
-        DataSource = installed,
-        DisplayMember = nameof(DiscordChannel.DisplayName),
-        SelectedIndex = 0
-    };
-    var cancel = new Button { Text = "Cancel", DialogResult = DialogResult.Cancel, Left = 205, Top = 137, Width = 75 };
-    var select = new Button { Text = "Select", DialogResult = DialogResult.OK, Left = 289, Top = 137, Width = 75 };
-    dialog.Controls.AddRange([label, list, cancel, select]);
-    dialog.CancelButton = cancel;
-    dialog.AcceptButton = select;
-
-    return dialog.ShowDialog() == DialogResult.OK && list.SelectedItem is DiscordChannel selected
-        ? selected
-        : throw new InvalidOperationException("Discord installation was not selected.");
-}
-
 static string FindNewestResourcesDirectory(DiscordChannel channel) {
     var appDirectories = Directory.EnumerateDirectories(channel.InstallDirectory, "app-*")
         .OrderByDescending(path => VersionKey(Path.GetFileName(path)))
@@ -298,14 +323,6 @@ static bool IsDiscordRunning() => Process.GetProcesses()
 
 static void ShowInfo(string message) =>
     MessageBox.Show(message, $"{ProductName} Installer", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-static bool AskToStartDiscord() =>
-    MessageBox.Show(
-        "Start Discord now?",
-        $"{ProductName} Installer",
-        MessageBoxButtons.YesNo,
-        MessageBoxIcon.Question
-    ) == DialogResult.Yes;
 
 static void StartDiscord(DiscordChannel channel) {
     var updateExe = Path.Combine(channel.InstallDirectory, "Update.exe");
