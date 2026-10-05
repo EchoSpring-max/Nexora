@@ -13,7 +13,7 @@ export const settings = definePluginSettings({
     format: {
         component: ({ setValue }) => FormatSetting(setValue),
         type: OptionType.COMPONENT,
-        default: "{equicordIcon} Equicord {equicordVersion} ({equicordHash})",
+        default: "{equicordIcon} Nexora {equicordVersion} ({equicordHash})",
         restartNeeded: true
     }
 });
@@ -34,10 +34,10 @@ export const settingVariables = [
     "{buildHash} - Discord build hash (e.g. 123456789)",
     "",
     "Nexora Variables:",
-    "{equicordIcon} - Equicord icon",
-    "{equicordVersion} - Version of Equicord (e.g. 1.0.0)",
-    "{equicordHash} - Equicord build hash (e.g. 123456789)",
-    "{equicordPlatform} - Platform Equicord is running on (e.g. Dev Build)",
+    "{equicordIcon} - Nexora icon",
+    "{equicordVersion} - Version of Nexora (e.g. 1.0.0)",
+    "{equicordHash} - Nexora build hash (e.g. 123456789)",
+    "{equicordPlatform} - Platform Nexora is running on (e.g. Dev Build)",
     "",
     "Equibop Specific Variables:",
     "{equibopHash} - Equibop build hash (e.g. 123456789)",
