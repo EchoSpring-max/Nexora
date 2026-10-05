@@ -1,0 +1,15 @@
+/*
+ * Vencord, a Discord client mod
+ * Copyright (c) 2026 EchoSpring-max
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.nx-badge-bridge-badges {
+    display: flex;
+    align-items: center;
+}
+
+.nx-badge-bridge-icon {
+    width: 20px;
+    height: 20px;
+}
