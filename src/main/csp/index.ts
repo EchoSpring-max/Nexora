@@ -55,6 +55,7 @@ export const CspPolicies: PolicyMap = {
     // Function Specific
     "api.github.com": ConnectSrc, // used for updating Vencord itself
     "globalbadges-bot-production.up.railway.app": ImageAndCssSrc,
+    "gb.obamabot.me": ImageSrc, // legacy GlobalBadges image host
     "ws.audioscrobbler.com": ConnectSrc, // Last.fm API
     "musicbrainz.org": ConnectSrc,
     "*.listenbrainz.org": ConnectSrc,

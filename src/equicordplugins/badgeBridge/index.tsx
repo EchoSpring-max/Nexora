@@ -120,6 +120,7 @@ export default definePlugin({
     description: "Displays approved Nexora community badges and preserved client-mod badges on profiles.",
     authors: [NexoraDevs.EchoSpring],
     dependencies: ["BadgeAPI"],
+    required: true,
     enabledByDefault: true,
     tags: ["Appearance"],
     website: API_URL,
