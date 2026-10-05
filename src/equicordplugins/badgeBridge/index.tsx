@@ -115,7 +115,7 @@ const profileBadge: ProfileBadge = {
 // Existing installations may not have option keys written until a user changes
 // them. Treat an absent key as the documented default, rather than hiding all
 // remotely approved badges after an update.
-const showSourceLabels = () => Vencord.Settings.plugins.BadgeBridge.showSourceLabels !== false;
+const showSourceLabels = () => Vencord.Settings.plugins.BadgeBridge.showSourceLabels === true;
 const showCommunityBadges = () => Vencord.Settings.plugins.BadgeBridge.showCommunityBadges !== false;
 
 export default definePlugin({
@@ -136,7 +136,7 @@ export default definePlugin({
         showSourceLabels: {
             type: OptionType.BOOLEAN,
             description: "Show the badge source in tooltips.",
-            default: true,
+            default: false,
             restartNeeded: false
         },
         showCommunityBadges: {
