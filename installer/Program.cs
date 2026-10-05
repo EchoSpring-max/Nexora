@@ -61,37 +61,36 @@ static string InstallNexora(DiscordChannel selectedChannel) {
 }
 
 static void RunInstaller(DiscordChannel[] detectedChannels, string[] args) {
-    var background = Color.FromArgb(18, 16, 27);
-    var surface = Color.FromArgb(31, 28, 43);
-    var surfaceAlt = Color.FromArgb(42, 37, 57);
-    var accent = Color.FromArgb(184, 117, 255);
-    var text = Color.FromArgb(244, 241, 251);
-    var muted = Color.FromArgb(176, 168, 192);
+    var background = Color.FromArgb(14, 12, 19);
+    var surface = Color.FromArgb(25, 21, 33);
+    var surfaceAlt = Color.FromArgb(35, 29, 46);
+    var accent = Color.FromArgb(218, 183, 255);
+    var text = Color.FromArgb(250, 247, 255);
+    var muted = Color.FromArgb(177, 167, 191);
 
     using var form = new Form {
         Text = "Nexora Setup",
         StartPosition = FormStartPosition.CenterScreen,
-        ClientSize = new Size(680, 500),
-        MinimumSize = new Size(680, 500),
+        ClientSize = new Size(680, 456),
+        MinimumSize = new Size(680, 456),
         MaximizeBox = false,
         BackColor = background,
         ForeColor = text,
         Font = new Font("Segoe UI", 10F),
-        FormBorderStyle = FormBorderStyle.FixedSingle
+        FormBorderStyle = FormBorderStyle.FixedSingle,
+        Icon = Icon.ExtractAssociatedIcon(Application.ExecutablePath) ?? SystemIcons.Application
     };
 
-    var header = new Panel { Dock = DockStyle.Top, Height = 172, BackColor = surface };
+    var header = new Panel { Dock = DockStyle.Top, Height = 138, BackColor = surface };
     header.Paint += (_, e) => {
-        using var glow = new SolidBrush(Color.FromArgb(70, accent));
-        e.Graphics.FillEllipse(glow, 445, -175, 360, 360);
         using var iconStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(EmbeddedIconName);
         using var icon = iconStream is null ? null : Image.FromStream(iconStream);
         if (icon is not null)
-            e.Graphics.DrawImage(icon, new Rectangle(32, 36, 62, 62));
+            e.Graphics.DrawImage(icon, new Rectangle(33, 36, 58, 58));
     };
-    var title = new Label { Text = "Welcome to Nexora", AutoSize = true, Location = new Point(117, 40), Font = new Font("Segoe UI", 23F, FontStyle.Bold), ForeColor = text };
-    var subtitle = new Label { Text = "A cleaner way to personalize your Discord desktop client.", AutoSize = true, Location = new Point(120, 81), Font = new Font("Segoe UI", 10.5F), ForeColor = muted };
-    var version = new Label { Text = "NEXORA SETUP  •  WINDOWS", AutoSize = true, Location = new Point(34, 127), Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(210, 186, 245) };
+    var title = new Label { Text = "Set up Nexora", AutoSize = true, Location = new Point(112, 34), Font = new Font("Segoe UI", 22F, FontStyle.Bold), ForeColor = text };
+    var subtitle = new Label { Text = "Choose Discord, then make it yours.", AutoSize = true, Location = new Point(115, 72), Font = new Font("Segoe UI", 10F), ForeColor = muted };
+    var version = new Label { Text = "WINDOWS DESKTOP", AutoSize = true, Location = new Point(115, 99), Font = new Font("Segoe UI", 8F, FontStyle.Bold), ForeColor = Color.FromArgb(203, 171, 235) };
     header.Controls.AddRange([title, subtitle, version]);
 
     var content = new Panel { Dock = DockStyle.Fill, Padding = new Padding(34, 27, 34, 22), BackColor = background };
@@ -112,14 +111,14 @@ static void RunInstaller(DiscordChannel[] detectedChannels, string[] args) {
         } catch (InvalidOperationException) { }
     };
 
-    var notice = new Panel { Location = new Point(34, 143), Size = new Size(612, 54), BackColor = Color.FromArgb(33, 29, 47) };
-    var noticeIcon = new Label { Text = "i", TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.FromArgb(216, 185, 255), Location = new Point(14, 16), Size = new Size(20, 20), BackColor = Color.FromArgb(83, 61, 112) };
-    var noticeText = new Label { Text = "Close Discord before installing. Your original app archive is backed up automatically.", Location = new Point(48, 17), AutoSize = true, ForeColor = Color.FromArgb(205, 197, 219) };
+    var notice = new Panel { Location = new Point(34, 143), Size = new Size(612, 54), BackColor = Color.FromArgb(32, 26, 43) };
+    var noticeIcon = new Label { Text = "i", TextAlign = ContentAlignment.MiddleCenter, Font = new Font("Segoe UI", 9F, FontStyle.Bold), ForeColor = Color.FromArgb(239, 220, 255), Location = new Point(14, 16), Size = new Size(20, 20), BackColor = Color.FromArgb(96, 70, 132) };
+    var noticeText = new Label { Text = "Close Discord first. Nexora safely keeps the original package as a backup.", Location = new Point(48, 17), AutoSize = true, ForeColor = Color.FromArgb(218, 210, 229) };
     notice.Controls.AddRange([noticeIcon, noticeText]);
 
     var launch = new CheckBox { Text = "Launch Discord after setup", AutoSize = true, Checked = true, Location = new Point(34, 216), ForeColor = muted, FlatStyle = FlatStyle.Flat };
     var status = new Label { Text = detectedChannels.Length > 0 ? "Ready to install" : "Select Discord.exe to continue", AutoSize = true, Location = new Point(34, 257), ForeColor = muted, Font = new Font("Segoe UI", 9F) };
-    var install = new Button { Text = "Install Nexora", Location = new Point(481, 231), Size = new Size(165, 47), FlatStyle = FlatStyle.Flat, BackColor = accent, ForeColor = Color.FromArgb(29, 18, 40), Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
+    var install = new Button { Text = "Install Nexora  →", Location = new Point(443, 231), Size = new Size(203, 47), FlatStyle = FlatStyle.Flat, BackColor = accent, ForeColor = Color.FromArgb(35, 22, 47), Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
     install.FlatAppearance.BorderSize = 0;
     install.Click += async (_, _) => {
         if (channelPicker.SelectedItem is not DiscordChannel selected) {
