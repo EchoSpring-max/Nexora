@@ -20,7 +20,6 @@ import { fetchBuffer, fetchJson } from "@main/utils/http";
 import { VENCORD_USER_AGENT } from "@shared/vencordUserAgent";
 import { writeFileSync } from "original-fs";
 
-import gitHash from "~git-hash";
 import gitRemote from "~git-remote";
 
 import { Updater } from ".";
@@ -28,6 +27,16 @@ import { ASAR_FILE } from "./common";
 
 const API_BASE = `https://api.github.com/repos/${gitRemote}`;
 let PendingUpdate: string | null = null;
+
+interface GithubRelease {
+    tag_name: string;
+    name: string | null;
+    author?: { login?: string; };
+    assets: Array<{
+        name: string;
+        browser_download_url: string;
+    }>;
+}
 
 async function githubGet<T = any>(endpoint: string) {
     return fetchJson<T>(API_BASE + endpoint, {
@@ -40,27 +49,44 @@ async function githubGet<T = any>(endpoint: string) {
     });
 }
 
+function isNewerVersion(tag: string) {
+    const releaseParts = tag.replace(/^v/i, "").split(".").map(part => Number.parseInt(part, 10) || 0);
+    const currentParts = VERSION.split(".").map(part => Number.parseInt(part, 10) || 0);
+
+    for (let i = 0; i < Math.max(releaseParts.length, currentParts.length); i++) {
+        const releasePart = releaseParts[i] ?? 0;
+        const currentPart = currentParts[i] ?? 0;
+        if (releasePart !== currentPart)
+            return releasePart > currentPart;
+    }
+
+    return false;
+}
+
+function getDesktopAsset(release: GithubRelease) {
+    const asset = release.assets.find(asset => asset.name === ASAR_FILE);
+    if (!asset)
+        throw new Error(`The ${release.tag_name} release does not include ${ASAR_FILE}.`);
+    return asset;
+}
+
 async function listUpdates() {
-    const isOutdated = await fetchUpdate();
-    if (!isOutdated) return [];
+    const release = await githubGet<GithubRelease>("/releases/latest");
+    if (!isNewerVersion(release.tag_name)) return [];
 
-    const data = await githubGet(`/compare/${gitHash}...HEAD`);
-
-    return data.commits.map((c: any) => ({
-        hash: c.sha,
-        author: c.author?.login ?? c.commit?.author?.name ?? "Unknown Author",
-        message: c.commit.message.split("\n")[0]
-    }));
+    getDesktopAsset(release);
+    return [{
+        hash: release.tag_name,
+        author: release.author?.login ?? "Nexora",
+        message: release.name ?? `Nexora ${release.tag_name}`
+    }];
 }
 
 async function fetchUpdate() {
-    const data = await githubGet("/releases/latest");
+    const release = await githubGet<GithubRelease>("/releases/latest");
+    if (!isNewerVersion(release.tag_name)) return false;
 
-    const hash = data.name.slice(data.name.lastIndexOf(" ") + 1);
-    if (hash === gitHash)
-        return false;
-
-    const asset = data.assets.find(a => a.name === ASAR_FILE);
+    const asset = getDesktopAsset(release);
     PendingUpdate = asset.browser_download_url;
 
     return true;

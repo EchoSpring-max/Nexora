@@ -1,4 +1,4 @@
-[data-window-chrome="true"] {
+[class*="bar_"] {
     margin-inline-end: 12px !important;
 }
 

@@ -189,9 +189,7 @@ function UserPluginsTab() {
                     <div className={cl("plugins-grid")}>
                         {plugins
                             .toSorted((a, b) =>
-                                a.name.localeCompare(b.name, "en", {
-                                    sensitivity: "base",
-                                }),
+                                a.name.toLocaleLowerCase().localeCompare(b.name.toLocaleLowerCase()),
                             )
                             .toSorted((a, b) => {
                                 const updatePendingNames =
@@ -244,7 +242,7 @@ function UserPluginsTab() {
                                     setEnabled={t => {
                                         Vencord.Settings.plugins[pl.name].enabled = t;
                                         if (pluginRequiresRestart(pl)) {
-                                            showToast("Restart to apply changes!", "message");
+                                            showToast({ text: "Restart to apply changes!" });
                                         } else {
                                             (t ? startPlugin : stopPlugin)(pl);
                                         }

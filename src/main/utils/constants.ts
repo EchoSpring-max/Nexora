@@ -17,16 +17,19 @@
 */
 
 import { app } from "electron";
-import { copyFileSync, existsSync, readFileSync, writeFileSync } from "fs";
+import { copyFileSync, cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
 const suffix = IS_DEV ? "dev" : "";
 
-export const DATA_DIR = process.env.EQUICORD_USER_DATA_DIR ?? (
+const defaultDataDir = (name: string) => (
     process.env.DISCORD_USER_DATA_DIR
-        ? join(process.env.DISCORD_USER_DATA_DIR, "..", "EquicordData", suffix)
-        : join(app.getPath("userData"), "..", "Equicord", suffix)
+        ? join(process.env.DISCORD_USER_DATA_DIR, "..", `${name}Data`, suffix)
+        : join(app.getPath("userData"), "..", name, suffix)
 );
+
+export const DATA_DIR = process.env.NEXORA_USER_DATA_DIR ?? defaultDataDir("Nexora");
+const EQUICORD_DATA_DIR = defaultDataDir("Equicord");
 
 export const SETTINGS_DIR = join(DATA_DIR, "settings");
 export const THEMES_DIR = join(DATA_DIR, "themes");
@@ -34,6 +37,9 @@ export const QUICK_CSS_PATH = join(SETTINGS_DIR, "quickCss.css");
 export const SETTINGS_FILE = join(SETTINGS_DIR, "settings.json");
 export const NATIVE_SETTINGS_FILE = join(SETTINGS_DIR, "native-settings.json");
 export const DEV_MIGRATED = join(SETTINGS_DIR, "migration");
+const EQUICORD_SETTINGS_FILE = join(EQUICORD_DATA_DIR, "settings", "settings.json");
+const EQUICORD_QUICK_CSS_PATH = join(EQUICORD_DATA_DIR, "settings", "quickCss.css");
+const EQUICORD_THEMES_DIR = join(EQUICORD_DATA_DIR, "themes");
 export const ALLOWED_PROTOCOLS = [
     "https:",
     "http:",
@@ -47,6 +53,13 @@ export const ALLOWED_PROTOCOLS = [
 ];
 
 export const IS_VANILLA = /* @__PURE__ */ process.argv.includes("--vanilla");
+
+if (!IS_DEV && !process.env.NEXORA_USER_DATA_DIR && !existsSync(SETTINGS_FILE) && existsSync(EQUICORD_SETTINGS_FILE)) {
+    mkdirSync(SETTINGS_DIR, { recursive: true });
+    copyFileSync(EQUICORD_SETTINGS_FILE, SETTINGS_FILE);
+    if (existsSync(EQUICORD_QUICK_CSS_PATH)) copyFileSync(EQUICORD_QUICK_CSS_PATH, QUICK_CSS_PATH);
+    if (existsSync(EQUICORD_THEMES_DIR) && !existsSync(THEMES_DIR)) cpSync(EQUICORD_THEMES_DIR, THEMES_DIR, { recursive: true });
+}
 
 if (IS_DEV) {
     const prodDir = join(DATA_DIR, "..");
@@ -68,7 +81,7 @@ if (IS_DEV) {
                 app.relaunch();
                 app.exit(0);
             } catch (err) {
-                console.error("[Equicord] Failed to copy prod data:", err);
+                console.error("[Nexora] Failed to copy production data:", err);
             }
         }, 5000);
     }

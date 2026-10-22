@@ -15,7 +15,7 @@ const rootTitle = { base: null as string | null };
 export const settings = definePluginSettings({
     title: {
         type: OptionType.STRING,
-        default: "Equicord",
+        default: "Nexora",
         description: "Window title prefix",
         onChange: setTitle,
     },
@@ -44,6 +44,9 @@ export default definePlugin({
     ],
 
     start() {
+        if (settings.store.title === "Equicord") {
+            settings.store.title = "Nexora";
+        }
         setTitle(settings.store.title);
     },
 

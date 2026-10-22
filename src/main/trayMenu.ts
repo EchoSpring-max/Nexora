@@ -74,39 +74,38 @@ function openAboutWindow() {
     });
 }
 
-const notify = (window: BaseWindow | undefined, title: string, message: string) =>
-    window && !window.isDestroyed()
-        ? dialog.showMessageBox(window, { title, message })
-        : dialog.showMessageBox({ title, message });
+const notify = (window: BaseWindow, title: string, message: string) => dialog.showMessageBox(window, { title, message });
 
 function createVencordMenuItems(): MenuItemConstructorOptions[] {
     return [
         {
-            label: "Equicord",
+            label: "Nexora",
             submenu: [
                 {
-                    label: "About Equicord",
+                    label: "About Nexora",
                     click: () => openAboutWindow()
                 },
                 {
-                    label: "Update Equicord",
+                    label: "Update Nexora",
                     async click(_item, window) {
+                        if (!window) return;
+
                         try {
                             const updateAvailable = await updater.fetchUpdate();
                             if (!updateAvailable) {
-                                return notify(window, "No Update Available", "You are already using the latest version of Equicord.");
+                                return notify(window, "No Update Available", "You are already using the latest version of Nexora.");
                             }
 
                             const result = await updater.applyUpdate();
                             if (!result) {
-                                return notify(window, "Update Failed", "Failed to apply the update for Equicord.");
+                                return notify(window, "Update Failed", "Failed to apply the update for Nexora.");
                             }
 
-                            await notify(window, "Update Successful", "Now relaunching Equicord to apply the update.");
+                            await notify(window, "Update Successful", "Now relaunching Nexora to apply the update.");
                             app.relaunch();
                             app.exit();
                         } catch (e) {
-                            notify(window, "Update Error", `An error occurred while updating Equicord.\n\n${String(e)}`);
+                            notify(window, "Update Error", `An error occurred while updating Nexora.\n\n${String(e)}`);
                         }
                     }
                 },
@@ -128,7 +127,7 @@ export function patchTrayMenu(): void {
     const originalBuildFromTemplate = Menu.buildFromTemplate;
 
     Menu.buildFromTemplate = function (template: MenuItemConstructorOptions[]) {
-        const alreadyPatched = template.some(item => item.label === "Equicord");
+        const alreadyPatched = template.some(item => item.label === "Nexora");
         if (isTrayMenu(template) && !alreadyPatched) {
             const insertIndex = findInsertIndex(template);
             const vencordItems = createVencordMenuItems();

@@ -174,6 +174,14 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
 
     const pluginMeta = PluginMeta[plugin.name];
     const isEquicordPlugin = pluginMeta.folderName.startsWith("src/equicordplugins/") ?? false;
+    const websiteUrl = pluginMeta.userPlugin
+        ? plugin.website
+        : isEquicordPlugin
+            ? `https://equicord.org/plugins/${plugin.name}`
+            : `https://vencord.dev/plugins/${plugin.name}`;
+    const repositoryUrl = pluginMeta.userPlugin
+        ? plugin.repository
+        : `https://github.com/${gitRemote}/tree/main/${pluginMeta.folderName}`;
 
     return (
         <Modal
@@ -255,22 +263,24 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                                 )}
                             </Tooltip>
                         ) : <div />}
-                        {!pluginMeta.userPlugin && (
-                            <div className={cl("links")}>
-                                <FavoriteButton
-                                    isFavorite={pluginSettings.isFavorite ?? false}
-                                    onClick={() => pluginSettings.isFavorite = !pluginSettings.isFavorite}
-                                />
+                        <div className={cl("links")}>
+                            <FavoriteButton
+                                isFavorite={pluginSettings.isFavorite ?? false}
+                                onClick={() => pluginSettings.isFavorite = !pluginSettings.isFavorite}
+                            />
+                            {websiteUrl && (
                                 <WebsiteButton
                                     text="Website"
-                                    href={isEquicordPlugin ? `https://equicord.org/plugins/${plugin.name}` : `https://vencord.dev/plugins/${plugin.name}`}
+                                    href={websiteUrl}
                                 />
+                            )}
+                            {repositoryUrl && (
                                 <GithubButton
                                     text="Source Code"
-                                    href={`https://github.com/${gitRemote}/tree/main/${pluginMeta.folderName}`}
+                                    href={repositoryUrl}
                                 />
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </Flex>
                 </Flex>
             </div>

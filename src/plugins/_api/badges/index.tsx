@@ -48,7 +48,7 @@ const ContributorBadge: ProfileBadge = {
 
 const EquicordContributorBadge: ProfileBadge = {
     id: "equicord_contributor_badge",
-    description: "Equicord Contributor",
+    description: "Nexora Contributor",
     iconSrc: EQUICORD_CONTRIBUTOR_BADGE,
     position: BadgePosition.START,
     shouldShow: ({ userId }) => shouldShowEquicordContributorBadge(userId),
@@ -152,6 +152,13 @@ export default definePlugin({
                 {
                     match: /(?<=fallbackIconSrc:.{0,50}?)children:(?=.{0,50}?(\i)\.id)/,
                     replace: "children:$1.component?$self.renderBadgeComponent({...$1}):"
+                },
+                // Discord's current profile renderer passes a fallback icon and then
+                // renders an Anchor directly, without referencing the badge id in the
+                // children expression. Keep custom profile-badge components working.
+                {
+                    match: /(fallbackIconSrc:(\i)\.iconSrc.{0,300}?,children:)(?=\(0,\i\.jsx\(\i\.Anchor)/,
+                    replace: "$1$2.component?$self.renderBadgeComponent({...$2}):"
                 },
                 // handle onClick and onContextMenu
                 {
