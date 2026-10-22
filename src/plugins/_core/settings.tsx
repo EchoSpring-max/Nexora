@@ -5,7 +5,7 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import { BackupRestoreIcon, CloudIcon, LogIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PluginsIcon, UpdaterIcon } from "@components/Icons";
+import { BackupRestoreIcon, CloudIcon, LogIcon, MainSettingsIcon, PaintbrushIcon, PatchHelperIcon, PencilSparkleIcon, PluginsIcon, UpdaterIcon } from "@components/Icons";
 import {
     BackupAndRestoreTab,
     ChangelogTab,
@@ -13,6 +13,7 @@ import {
     PatchHelperTab,
     PluginsTab,
     ThemesTab,
+    TypingIndicatorTab,
     UpdaterTab,
     VencordTab,
 } from "@components/settings";
@@ -208,6 +209,12 @@ export default definePlugin({
                 title: "Themes",
                 Component: ThemesTab,
                 Icon: PaintbrushIcon
+            }),
+            buildEntry({
+                key: "nexora_typing_indicator",
+                title: "Typing Indicator",
+                Component: TypingIndicatorTab,
+                Icon: PencilSparkleIcon
             }),
             !IS_UPDATER_DISABLED && UpdaterTab && buildEntry({
                 key: "equicord_updater",
