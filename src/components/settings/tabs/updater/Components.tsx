@@ -14,7 +14,7 @@ import { Span } from "@components/Span";
 import { Margins } from "@utils/margins";
 import { relaunch } from "@utils/native";
 import { changes, checkForUpdates, update, updateError } from "@utils/updater";
-import { ConfirmModal, openModal, React, showToast, useState } from "@webpack/common";
+import { ConfirmModal, openModal, React, useState } from "@webpack/common";
 
 import { runWithDispatch } from "./runWithDispatch";
 
@@ -89,9 +89,6 @@ export function Updatable(props: CommonProps) {
                             setUpdates(changes);
                         } else {
                             setUpdates([]);
-
-                            showToast({ text: "No updates found!", position: "bottom" });
-
                         }
                     })}
                 >
