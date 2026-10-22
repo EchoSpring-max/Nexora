@@ -38,6 +38,9 @@ async function Unwrap<T>(p: Promise<IpcRes<T>>) {
 }
 
 export async function checkForUpdates() {
+    // Clear a previous failed-check result before a new request. Otherwise a
+    // successful retry can still be displayed as an error by the updater tab.
+    updateError = undefined;
     changes = await Unwrap(VencordNative.updater.getUpdates());
 
     // we only want to check this for the git updater, not the http updater

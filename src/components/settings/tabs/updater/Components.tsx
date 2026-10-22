@@ -74,6 +74,7 @@ export function Updatable(props: CommonProps) {
     const [updates, setUpdates] = useState(changes);
     const [isChecking, setIsChecking] = useState(false);
     const [isUpdating, setIsUpdating] = useState(false);
+    const [lastCheckSucceeded, setLastCheckSucceeded] = useState(false);
 
     const isOutdated = (updates?.length ?? 0) > 0;
 
@@ -90,6 +91,8 @@ export function Updatable(props: CommonProps) {
                         } else {
                             setUpdates([]);
                         }
+
+                        setLastCheckSucceeded(true);
                     })}
                 >
                     Check for Updates
@@ -143,7 +146,9 @@ export function Updatable(props: CommonProps) {
                 </>
             ) : (
                 <Paragraph>
-                    You're running the latest version of Nexora.
+                    {lastCheckSucceeded
+                        ? "Nexora is up to date. You already have the latest published release."
+                        : "Check for updates to see whether a newer Nexora release is available."}
                 </Paragraph>
             )}
         </>
