@@ -181,7 +181,7 @@ const settings = definePluginSettings({
         restartNeeded: true,
         options: [
             {
-                label: "Nexora",
+                label: "Equicord",
                 value: "equicord",
                 default: true
             },

@@ -45,7 +45,7 @@ export default definePlugin({
     tags: ["Activity", "Utility"],
     authors: [Devs.Ducko],
     reporterTestable: ReporterTestable.None,
-    hidden: !IS_EQUIBOP && !IS_VESKTOP && !("legcord" in window),
+    hidden: IS_EQUIBOP || IS_VESKTOP || "legcord" in window,
 
     settingsAboutComponent: () => (
         <>
@@ -92,7 +92,7 @@ export default definePlugin({
             return;
         }
 
-        showToast("Connected to arRPC", "success");
+        showToast({ text: "Connected to arRPC", variant: "success" });
     },
 
     stop() {

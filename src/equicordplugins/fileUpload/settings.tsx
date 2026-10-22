@@ -236,6 +236,12 @@ export const settings = definePluginSettings({
         default: true,
         hidden: true
     },
+    customDiscordFileSizeLimitMB: {
+        type: OptionType.NUMBER,
+        description: "Manual Discord file size limit in MB. 0 means automatic detection.",
+        default: 0,
+        hidden: true
+    },
     gofileToken: {
         type: OptionType.STRING,
         description: "Optional GoFile API token",
@@ -520,10 +526,10 @@ export function SettingsComponent() {
     const validateShareXConfig = () => {
         try {
             parseShareXConfig(settings.store.sharexConfig || "");
-            showToast("ShareX config is valid", "success");
+            showToast({ text: "ShareX config is valid", variant: "success" });
         } catch (error) {
             const message = error instanceof Error ? error.message : "Invalid ShareX config";
-            showToast(message, "failure");
+            showToast({ text: message, variant: "critical" });
         }
     };
 
@@ -542,10 +548,10 @@ export function SettingsComponent() {
                 const parsed = parseShareXConfig(content);
                 settings.store.sharexConfig = JSON.stringify(parsed, null, 2);
                 update();
-                showToast("Imported ShareX config", "success");
+                showToast({ text: "Imported ShareX config", variant: "success" });
             } catch (error) {
                 const message = error instanceof Error ? error.message : "Failed to import ShareX config";
-                showToast(message, "failure");
+                showToast({ text: message, variant: "critical" });
             }
         };
         reader.readAsText(file);
@@ -990,6 +996,14 @@ export function SettingsComponent() {
                     description="Use FileUpload only for files larger than your current Discord upload limit."
                     checked={settings.store.bypassDiscordUploadOnlyOverLimit}
                     onChange={v => settings.store.bypassDiscordUploadOnlyOverLimit = v}
+                />
+
+                <SettingTextInput
+                    name="Discord Limit Override (MB)"
+                    description="Manual Discord file size limit in MB, used when automatic detection is wrong. Leave empty for automatic."
+                    value={settings.store.customDiscordFileSizeLimitMB > 0 ? String(settings.store.customDiscordFileSizeLimitMB) : ""}
+                    onChange={v => settings.store.customDiscordFileSizeLimitMB = v.trim() === "" ? 0 : Number(v)}
+                    placeholder="Auto"
                 />
 
                 <SettingTextInput

@@ -12,25 +12,25 @@ import { useEffect, UserStore, useState } from "@webpack/common";
 const settings = definePluginSettings({
     showEquicordDonor: {
         type: OptionType.BOOLEAN,
-        description: "Enable to show Nexora supporter badges in chat.",
+        description: "Enable to show Equicord Donor badges in chat.",
         hidden: true,
         default: true
     },
     EquicordDonorPosition: {
         type: OptionType.NUMBER,
-        description: "The position of the Nexora supporter badges.",
+        description: "The position of the Equicord Donor badges.",
         hidden: true,
         default: 0
     },
     showEquicordContributor: {
         type: OptionType.BOOLEAN,
-        description: "Enable to show Nexora contributor badges in chat.",
+        description: "Enable to show Equicord Contributor badges in chat.",
         hidden: true,
         default: true
     },
     EquicordContributorPosition: {
         type: OptionType.NUMBER,
-        description: "The position of the Nexora contributor badge.",
+        description: "The position of the Equicord Contributor badge.",
         hidden: true,
         default: 1
     },

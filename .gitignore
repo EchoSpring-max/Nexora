@@ -1,7 +1,5 @@
 dist
 node_modules
-/installer/bin
-/installer/obj
 .VSCodeCounter
 .vars
 .secrets

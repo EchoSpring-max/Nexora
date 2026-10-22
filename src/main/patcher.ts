@@ -24,7 +24,7 @@ import { RendererSettings } from "./settings";
 import { patchTrayMenu } from "./trayMenu";
 import { IS_VANILLA } from "./utils/constants";
 
-console.log("[Nexora] Starting up...");
+console.log("[Equicord] Starting up...");
 
 // Our injector file at app/index.js
 const injectorPath = require.main!.filename;
@@ -149,11 +149,11 @@ if (!IS_VANILLA) {
         s.set("DANGEROUS_ENABLE_DEVTOOLS_ONLY_ENABLE_IF_YOU_KNOW_WHAT_YOURE_DOING", true);
     });
 
-    process.env.DATA_DIR = join(app.getPath("userData"), "..", "Nexora");
+    process.env.DATA_DIR = join(app.getPath("userData"), "..", "Equicord");
     if (settings.plugins?.NoTrack?.disableStackDumping !== false) process.env.ELECTRON_ENABLE_STACK_DUMPING = "true";
 } else {
-    console.log("[Nexora] Running in vanilla mode. Not loading Nexora");
+    console.log("[Equicord] Running in vanilla mode. Not loading Equicord");
 }
 
-console.log("[Nexora] Loading original Discord app.asar");
+console.log("[Equicord] Loading original Discord app.asar");
 require(require.main!.filename);

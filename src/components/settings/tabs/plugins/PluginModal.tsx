@@ -34,7 +34,6 @@ import { Margins } from "@utils/margins";
 import { classes, isObjectEmpty } from "@utils/misc";
 import { OptionType, Plugin, PluginTag } from "@utils/types";
 import { RenderModalProps, User } from "@vencord/discord-types";
-import { ToastPosition } from "@vencord/discord-types/enums";
 import { findComponentByCodeLazy, findCssClassesLazy } from "@webpack";
 import { Clickable, FluxDispatcher, Modal, openModal, React, showToast,Text, Tooltip, useEffect, useMemo, UserStore, UserSummaryItem, UserUtils, useState } from "@webpack/common";
 import { Constructor } from "type-fest";
@@ -175,14 +174,6 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
 
     const pluginMeta = PluginMeta[plugin.name];
     const isEquicordPlugin = pluginMeta.folderName.startsWith("src/equicordplugins/") ?? false;
-    const websiteUrl = pluginMeta.userPlugin
-        ? plugin.website
-        : isEquicordPlugin
-            ? `https://equicord.org/plugins/${plugin.name}`
-            : `https://vencord.dev/plugins/${plugin.name}`;
-    const repositoryUrl = pluginMeta.userPlugin
-        ? plugin.repository
-        : `https://github.com/${gitRemote}/tree/main/${pluginMeta.folderName}`;
 
     return (
         <Modal
@@ -253,9 +244,8 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                             <Tooltip text="Reset to default settings" shouldShow={!isObjectEmpty(pluginSettings)}>
                                 {({ onMouseEnter, onMouseLeave }) => (
                                     <Button
-                                        className={cl("disable-warning")}
+                                        variant="dangerPrimary"
                                         size="small"
-                                        variant="primary"
                                         onClick={handleResetClick}
                                         onMouseEnter={onMouseEnter}
                                         onMouseLeave={onMouseLeave}
@@ -265,24 +255,22 @@ export default function PluginModal({ plugin, onRestartNeeded, onClose, transiti
                                 )}
                             </Tooltip>
                         ) : <div />}
-                        <div className={cl("links")}>
-                            <FavoriteButton
-                                isFavorite={pluginSettings.isFavorite ?? false}
-                                onClick={() => pluginSettings.isFavorite = !pluginSettings.isFavorite}
-                            />
-                            {websiteUrl && (
+                        {!pluginMeta.userPlugin && (
+                            <div className={cl("links")}>
+                                <FavoriteButton
+                                    isFavorite={pluginSettings.isFavorite ?? false}
+                                    onClick={() => pluginSettings.isFavorite = !pluginSettings.isFavorite}
+                                />
                                 <WebsiteButton
                                     text="Website"
-                                    href={websiteUrl}
+                                    href={isEquicordPlugin ? `https://equicord.org/plugins/${plugin.name}` : `https://vencord.dev/plugins/${plugin.name}`}
                                 />
-                            )}
-                            {repositoryUrl && (
                                 <GithubButton
                                     text="Source Code"
-                                    href={repositoryUrl}
+                                    href={`https://github.com/${gitRemote}/tree/main/${pluginMeta.folderName}`}
                                 />
-                            )}
-                        </div>
+                            </div>
+                        )}
                     </Flex>
                 </Flex>
             </div>
@@ -335,9 +323,11 @@ function resetSettings(plugin: Plugin, onRestartNeeded?: (pluginName: string) =>
         onRestartNeeded?.(plugin.name);
     }
 
-    showToast(`Settings for ${pluginName} have been reset.`, "success", {
-            position: ToastPosition.TOP
-        });
+    showToast({
+        text: `Settings for ${pluginName} have been reset.`,
+        variant: "success",
+        position: "top"
+    });
 }
 
 export function openWarningModal(plugin?: Plugin | null, onRestartNeeded?: (pluginName: string) => void, isPlugin = true, enabledPlugins?: number | null, reset?: () => void) {

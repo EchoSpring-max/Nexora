@@ -95,7 +95,7 @@ export function NewPluginsSection({
                         ) ||
                         plugin.name.endsWith("API");
                     const tooltipText = plugin.required
-                        ? "This plugin is required for Nexora to function."
+                        ? "This plugin is required for Equicord to function."
                         : makeDependencyList(
                             depMap[plugin.name]?.filter(
                                 d => settings.plugins[d].enabled,
@@ -156,7 +156,7 @@ export function NewPluginsSection({
                                 The following plugins require a restart:
                                 <div className={Margins.bottom8} />
                                 <ul>
-                                    {changes.map(p => (
+                                    {Array.from(changes, p => (
                                         <li key={p}>{p}</li>
                                     ))}
                                 </ul>
@@ -203,7 +203,7 @@ function CompactPluginCard({
         depMap[plugin.name]?.some(d => settings.plugins[d].enabled);
 
     const tooltipText = plugin.required
-        ? "This plugin is required for Nexora to function."
+        ? "This plugin is required for Equicord to function."
         : depMap[plugin.name]?.length > 0
             ? `This plugin is required by: ${depMap[plugin.name]
                 ?.filter(d => settings.plugins[d].enabled)

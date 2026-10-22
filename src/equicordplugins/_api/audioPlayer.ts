@@ -24,7 +24,7 @@ export default definePlugin({
                     // Uses the audio as-is if external, otherwise checks for an internal Discord sound.
                     // Also force loads the internal sounds module to account for the second patch group below,
                     // as well as accounting for not calling the module in this patch when this.type is not DISCORD.
-                    match: /(let \i=class.{0,1000}?new Audio;\i.src=)((\i\(\d+\))(?:\(`\.\/\$\{|.{0,50}concat\())this.name(\}\.mp3`\))/,
+                    match: /(let \i=class.{0,1250}?new Audio;\i.src=)((\i\(\d+\))\(`\.\/\$\{)this.name(\}\.mp3`\))/,
                     replace: "$3;$1this.type!==$self.AudioType.DISCORD?this.audio:$2this.audio$4"
                 },
                 {
@@ -66,11 +66,35 @@ export default definePlugin({
                 }
             ]
         },
-        // Do not patch Discord's SoundUtils separately from the grouped player patch above.
-        // Discord changes this code frequently; applying only the old argument-shifting patch
-        // after the player patch no longer matches makes ordinary sounds resolve as
-        // "./undefined.mp3". Normal Discord sounds must remain untouched until the full API
-        // patch can match the active client build.
+        {
+            // Pass undefined for options in default Discord calls to the audio constructor.
+            find: "SoundUtils",
+            replacement: {
+                match: /return new (\i)\((.{0,50}?)(?=}function)/,
+                replace: "return new $1(undefined,$2"
+            }
+        },
+        {
+            // Prevents Discord from forcing full volume for the "discodo" effect on client load.
+            // The internal sounds module being loaded on startup relies on one of these calls to volume
+            // regardless of if the "discodo" effect is enabled or not. This is due to the volume setter
+            // internally calling the ensureAudio function which is where the internal sounds module is loaded
+            // by default. To account for this, the module is force loaded in the first patch in the above group.
+            find: '"UPDATE_OPEN_ON_STARTUP"',
+            group: true,
+            replacement: [
+                {
+                    // Pass the unprocessed volume as 1 instead of overwriting it to 1 afterwards.
+                    match: /(?<=discodo",\i)(\);return )\i.volume=1,/,
+                    replace: ",1$1"
+                },
+                {
+                    // Don't re-set volume since it was already set during initialization.
+                    match: /,(this._connectedSound.volume)=1/,
+                    replace: ";"
+                }
+            ]
+        }
     ],
 
     stopAudio(player: AudioPlayerInternal, restart?: boolean) {

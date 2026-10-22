@@ -146,7 +146,7 @@ async function runUpdateCheck() {
                 notifiedForUpdatesThisSession = true;
 
                 showNotice(
-                    "Nexora has been updated!",
+                    "Equicord has been updated!",
                     "Restart",
                     relaunch
                 );
@@ -158,7 +158,7 @@ async function runUpdateCheck() {
         notifiedForUpdatesThisSession = true;
 
         showNotice(
-            "A new version of Nexora is available!",
+            "A new version of Equicord is available!",
             "View Update",
             () => openSettingsTabModal(UpdaterTab!)
         );
@@ -176,9 +176,8 @@ async function init() {
     if (!IS_DEV && !IS_WEB && !IS_UPDATER_DISABLED) {
         runUpdateCheck();
 
-        // Check periodically whenever automatic updates are enabled. Notifications are
-        // still limited to once per session by runUpdateCheck.
-        if (Settings.autoUpdate) {
+        // this tends to get really annoying, so only do this if the user has auto-update without notification enabled
+        if (Settings.autoUpdate && !Settings.autoUpdateNotification) {
             setInterval(runUpdateCheck, 1000 * 60 * 30); // 30 minutes
         }
     }
@@ -190,7 +189,7 @@ async function init() {
                 "Webpack has finished initialising, but some patches haven't been applied yet.",
                 "This might be expected since some Modules are lazy loaded, but please verify",
                 "that all plugins are working as intended.",
-                "You are seeing this warning because this is a Development build of Nexora.",
+                "You are seeing this warning because this is a Development build of Equicord.",
                 "\nThe following patches have not been applied:",
                 "\n\n" + pendingPatches.map(p => `${p.plugin}: ${p.find}`).join("\n")
             );
