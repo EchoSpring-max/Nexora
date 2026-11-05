@@ -40,6 +40,7 @@ function isTrayMenu(template: MenuItemConstructorOptions[]): boolean {
 }
 
 let aboutWindow: BrowserWindow | null = null;
+let isUpdating = false;
 
 function openAboutWindow() {
     if (aboutWindow) {
@@ -78,7 +79,9 @@ const notify = (window: BaseWindow, title: string, message: string) => dialog.sh
 
 function createVencordMenuItems(): MenuItemConstructorOptions[] {
     return [
+        { type: "separator" },
         {
+            id: "nexora",
             label: "Nexora",
             submenu: [
                 {
@@ -87,8 +90,10 @@ function createVencordMenuItems(): MenuItemConstructorOptions[] {
                 },
                 {
                     label: "Update Nexora",
+                    visible: !IS_UPDATER_DISABLED,
                     async click(_item, window) {
-                        if (!window) return;
+                        if (!window || isUpdating) return;
+                        isUpdating = true;
 
                         try {
                             const updateAvailable = await updater.fetchUpdate();
@@ -106,6 +111,8 @@ function createVencordMenuItems(): MenuItemConstructorOptions[] {
                             app.exit();
                         } catch (e) {
                             notify(window, "Update Error", `An error occurred while updating Nexora.\n\n${String(e)}`);
+                        } finally {
+                            isUpdating = false;
                         }
                     }
                 },
@@ -127,7 +134,7 @@ export function patchTrayMenu(): void {
     const originalBuildFromTemplate = Menu.buildFromTemplate;
 
     Menu.buildFromTemplate = function (template: MenuItemConstructorOptions[]) {
-        const alreadyPatched = template.some(item => item.label === "Nexora");
+        const alreadyPatched = template.some(item => item.id === "nexora");
         if (isTrayMenu(template) && !alreadyPatched) {
             const insertIndex = findInsertIndex(template);
             const vencordItems = createVencordMenuItems();

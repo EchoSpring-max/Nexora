@@ -4,9 +4,10 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
+import { Button } from "@components/Button";
 import { NexoraDevs } from "@utils/constants";
 import definePlugin, { OptionType } from "@utils/types";
-import { Button, FluxDispatcher, React, RestAPI } from "@webpack/common";
+import { FluxDispatcher, React, RestAPI } from "@webpack/common";
 
 type Emoji = {
     id?: string;
@@ -156,7 +157,7 @@ function ResetButton() {
     return (
         <>
             <Button
-                color={Button.Colors.RED}
+                variant="dangerPrimary"
                 disabled={resetting}
                 onClick={async () => {
                     setResetting(true);
