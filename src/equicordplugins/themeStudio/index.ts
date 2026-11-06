@@ -27,6 +27,8 @@ function refreshStyle() {
 
     const s = settings.store;
     document.documentElement.classList.toggle("vc-theme-studio-message-actions", s.enhancedMessageActions);
+    document.documentElement.classList.toggle("vc-theme-studio-name-bubbles", s.nameBubbles);
+    document.documentElement.classList.toggle("vc-theme-studio-spotify", s.spotifyPanel);
     const wallpaper = s.wallpaper.trim()
         ? `url("${s.wallpaper.replace(/["\\]/g, "\\$&")}")`
         : "none";
@@ -49,6 +51,11 @@ function refreshStyle() {
         --nts-channel-width: ${s.channelWidth}px;
         --nts-member-width: ${s.memberWidth}px;
         --nts-message-gap: ${s.compactMessages ? 0 : s.messageSpacing}px;
+        --nts-name-bubble-opacity: ${s.nameBubbleOpacity}%;
+        --nts-name-bubble-hover-opacity: ${s.nameBubbleHoverOpacity}%;
+        --nts-name-bubble-padding: ${s.nameBubblePadding}px;
+        --nts-name-bubble-radius: ${s.nameBubbleRounding}px;
+        --nts-spotify-accent: ${s.spotifyUseThemeAccent ? "var(--nts-accent)" : "#1db954"};
         --nts-transition: ${s.animations ? "160ms" : "0ms"};
         --nts-transition-slow: ${s.animations ? "240ms" : "0ms"};
         --nts-message-animation: ${s.animations ? "nts-message-in" : "none"};
@@ -279,6 +286,56 @@ const settings = definePluginSettings({
         default: true,
         ...live
     },
+    nameBubbles: {
+        type: OptionType.BOOLEAN,
+        description: "Place role-colored bubbles behind usernames and compatible custom names.",
+        default: true,
+        ...live
+    },
+    nameBubbleOpacity: {
+        type: OptionType.SLIDER,
+        description: "Username bubble strength.",
+        markers: [5, 10, 15, 20, 25, 30, 40],
+        default: 20,
+        stickToMarkers: false,
+        ...live
+    },
+    nameBubbleHoverOpacity: {
+        type: OptionType.SLIDER,
+        description: "Username bubble strength while hovered.",
+        markers: [10, 20, 25, 30, 35, 40, 50],
+        default: 30,
+        stickToMarkers: false,
+        ...live
+    },
+    nameBubblePadding: {
+        type: OptionType.SLIDER,
+        description: "Horizontal space inside username bubbles.",
+        markers: [0, 2, 4, 6, 8, 10, 12],
+        default: 6,
+        stickToMarkers: false,
+        ...live
+    },
+    nameBubbleRounding: {
+        type: OptionType.SLIDER,
+        description: "Username bubble corner rounding.",
+        markers: [0, 3, 5, 7, 9, 12, 16],
+        default: 5,
+        stickToMarkers: false,
+        ...live
+    },
+    spotifyPanel: {
+        type: OptionType.BOOLEAN,
+        description: "Style the MusicControls Spotify player to match Theme Studio.",
+        default: true,
+        ...live
+    },
+    spotifyUseThemeAccent: {
+        type: OptionType.BOOLEAN,
+        description: "Use the theme accent for Spotify controls instead of Spotify green.",
+        default: true,
+        ...live
+    },
     customCss: {
         type: OptionType.STRING,
         description: "Advanced CSS overrides for anything not covered above.",
@@ -309,6 +366,8 @@ export default definePlugin({
         greetingTimer = undefined;
         removeTimer = undefined;
         document.documentElement.classList.remove("vc-theme-studio-message-actions");
+        document.documentElement.classList.remove("vc-theme-studio-name-bubbles");
+        document.documentElement.classList.remove("vc-theme-studio-spotify");
         variableStyle?.remove();
         variableStyle = null;
     }

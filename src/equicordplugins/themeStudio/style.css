@@ -285,6 +285,169 @@ button:hover {
     border-color: color-mix(in srgb, var(--nts-text) 12%, transparent);
 }
 
+.vc-theme-studio-name-bubbles :is([class^="message_"], [class*=" message_"]) :is([class^="header_"], [class*=" header_"]) {
+    margin-bottom: 4px;
+}
+
+.vc-theme-studio-name-bubbles :is([class^="message_"], [class*=" message_"]) :is([class^="username_"], [class*=" username_"]) {
+    border-radius: var(--nts-name-bubble-radius);
+    text-decoration: none;
+}
+
+.vc-theme-studio-name-bubbles :is([class^="message_"], [class*=" message_"]) :is([class^="username_"], [class*=" username_"]):not([class*="convenienceGlowGradient_"], :has(.smyn-name)) {
+    padding: 0 var(--nts-name-bubble-padding);
+    background: color-mix(in srgb, currentcolor var(--nts-name-bubble-opacity), transparent);
+    transition: background-color var(--nts-transition) ease, box-shadow var(--nts-transition) ease, transform var(--nts-transition) ease;
+}
+
+.vc-theme-studio-name-bubbles :is([class^="message_"], [class*=" message_"]) :is([class^="username_"], [class*=" username_"]):not([class*="convenienceGlowGradient_"], :has(.smyn-name)):hover {
+    text-decoration: none;
+    background: color-mix(in srgb, currentcolor var(--nts-name-bubble-hover-opacity), transparent);
+    box-shadow: 0 3px 12px color-mix(in srgb, currentcolor 14%, transparent);
+    transform: translateY(-1px);
+}
+
+.vc-theme-studio-name-bubbles .smyn-name:not(:is(.mention *, [class^="mention_"] *, [class*=" mention_"] *)) {
+    padding: 0 var(--nts-name-bubble-padding);
+    border-radius: var(--nts-name-bubble-radius);
+    box-shadow: inset 0 0 0 100px color-mix(in srgb, currentcolor var(--nts-name-bubble-opacity), transparent);
+    transition: box-shadow var(--nts-transition) ease, transform var(--nts-transition) ease;
+}
+
+.vc-theme-studio-name-bubbles .smyn-name:not(:is(.mention *, [class^="mention_"] *, [class*=" mention_"] *)):hover {
+    box-shadow: inset 0 0 0 100px color-mix(in srgb, currentcolor var(--nts-name-bubble-hover-opacity), transparent), 0 3px 12px color-mix(in srgb, currentcolor 14%, transparent);
+    transform: translateY(-1px);
+}
+
+.vc-theme-studio-name-bubbles :is(.mention, [class^="mention_"], [class*=" mention_"]):has(.smyn-name) {
+    margin-inline: 2px;
+    padding: 1px 4px;
+    border-radius: var(--nts-name-bubble-radius) !important;
+    background: color-mix(in srgb, currentcolor var(--nts-name-bubble-opacity), transparent) !important;
+}
+
+.vc-theme-studio-name-bubbles :is(.mention, [class^="mention_"], [class*=" mention_"]):has(.smyn-name):hover {
+    background: color-mix(in srgb, currentcolor var(--nts-name-bubble-hover-opacity), transparent) !important;
+}
+
+.vc-theme-studio-spotify #vc-spotify-player {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    margin: 6px 8px 8px;
+    padding: 10px;
+    border: 1px solid color-mix(in srgb, var(--nts-spotify-accent) 24%, var(--nts-text) 6%);
+    border-radius: calc(var(--nts-radius) * 0.85);
+    background: color-mix(in srgb, var(--nts-surface-color) 88%, transparent);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 22%);
+    backdrop-filter: blur(calc(var(--nts-blur) + 2px));
+
+    --vc-spotify-green: var(--nts-spotify-accent);
+    --vc-spotify-green-90: color-mix(in srgb, var(--nts-spotify-accent) 10%, transparent);
+    --vc-spotify-green-80: color-mix(in srgb, var(--nts-spotify-accent) 20%, transparent);
+}
+
+.vc-theme-studio-spotify #vc-spotify-player::before {
+    position: absolute;
+    z-index: -1;
+    inset: -24px;
+    content: "";
+    pointer-events: none;
+    opacity: 0.12;
+    background-image: linear-gradient(90deg, var(--nts-surface-color), transparent), var(--vc-spotify-track-image);
+    background-position: center;
+    background-size: cover;
+    filter: blur(18px) saturate(1.25);
+}
+
+.vc-theme-studio-spotify #vc-spotify-info-wrapper {
+    height: 48px;
+    gap: 10px;
+}
+
+.vc-theme-studio-spotify #vc-spotify-album-image {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    border: 1px solid color-mix(in srgb, var(--nts-text) 10%, transparent);
+    border-radius: calc(var(--nts-radius) * 0.55);
+    box-shadow: 0 5px 14px rgb(0 0 0 / 28%);
+    transition: filter var(--nts-transition) ease, transform var(--nts-transition) cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow var(--nts-transition) ease;
+}
+
+.vc-theme-studio-spotify #vc-spotify-album-image:hover {
+    filter: brightness(1.08) saturate(1.08);
+    box-shadow: 0 7px 18px rgb(0 0 0 / 34%);
+    transform: translateY(-1px) scale(1.035);
+}
+
+.vc-theme-studio-spotify #vc-spotify-titles {
+    min-width: 0;
+    padding: 0;
+}
+
+.vc-theme-studio-spotify #vc-spotify-song-title {
+    color: var(--nts-text);
+    font-size: 14px;
+    font-weight: 650;
+}
+
+.vc-theme-studio-spotify :is(.vc-spotify-artist, .vc-spotify-album, .vc-spotify-secondary-song-info) {
+    color: var(--nts-muted);
+}
+
+.vc-theme-studio-spotify #vc-spotify-progress-bar {
+    margin-block: 9px 5px;
+}
+
+.vc-theme-studio-spotify #vc-spotify-progress-bar > [class*="slider"] [class*="bar"] {
+    overflow: hidden;
+    height: 4px !important;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--nts-text) 14%, transparent);
+}
+
+.vc-theme-studio-spotify #vc-spotify-progress-bar > [class*="slider"] [class*="barFill"] {
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--nts-spotify-accent), color-mix(in srgb, var(--nts-spotify-accent) 65%, var(--nts-accent-secondary)));
+    box-shadow: 0 0 9px color-mix(in srgb, var(--nts-spotify-accent) 40%, transparent);
+}
+
+.vc-theme-studio-spotify #vc-spotify-progress-bar > [class*="slider"] [class*="grabber"] {
+    border: 2px solid var(--nts-surface-color);
+    background: var(--nts-spotify-accent);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 32%);
+}
+
+.vc-theme-studio-spotify .vc-spotify-progress-time {
+    color: var(--nts-muted);
+    font-size: 10px;
+}
+
+.vc-theme-studio-spotify .vc-spotify-button-row {
+    gap: 3px;
+    margin-top: 12px;
+}
+
+.vc-theme-studio-spotify .vc-spotify-button {
+    margin: 0;
+    border-radius: calc(var(--nts-radius) * 0.55);
+    color: var(--nts-muted);
+    transition: color var(--nts-transition) ease, background-color var(--nts-transition) ease, transform var(--nts-transition) cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow var(--nts-transition) ease;
+}
+
+.vc-theme-studio-spotify .vc-spotify-button:hover {
+    color: var(--nts-text);
+    background: color-mix(in srgb, var(--nts-spotify-accent) 15%, transparent);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 20%);
+    transform: translateY(-1px) scale(1.06);
+}
+
+.vc-theme-studio-spotify :is(.vc-spotify-repeat-context, .vc-spotify-repeat-track, .vc-spotify-shuffle-on) {
+    color: var(--nts-spotify-accent);
+    background: color-mix(in srgb, var(--nts-spotify-accent) 14%, transparent);
+}
+
 ::selection {
     color: var(--nts-text);
     background: color-mix(in srgb, var(--nts-accent) 55%, transparent);
