@@ -112,6 +112,31 @@ body::after {
     background: transparent;
 }
 
+/* Keep Discord's desktop title bar neutral when the user chooses a vivid text color. */
+:is([class^="bar_"], [class*=" bar_"]):has(> :is([class^="leading_"], [class*=" leading_"])):has(> :is([class^="trailing_"], [class*=" trailing_"])) {
+    color: #b5bac1;
+
+    --text-primary: #f2f3f5;
+    --text-secondary: #b5bac1;
+    --text-default: #b5bac1;
+    --text-normal: #b5bac1;
+    --text-muted: #949ba4;
+    --interactive-normal: #b5bac1;
+    --interactive-hover: #f2f3f5;
+    --interactive-active: #fff;
+    --interactive-icon-default: #b5bac1;
+    --interactive-icon-hover: #f2f3f5;
+    --interactive-icon-active: #fff;
+}
+
+:is([class^="bar_"], [class*=" bar_"]):has(> :is([class^="leading_"], [class*=" leading_"])):has(> :is([class^="trailing_"], [class*=" trailing_"])) :is(button, [role="button"], svg) {
+    color: inherit;
+}
+
+:is([class^="bar_"], [class*=" bar_"]):has(> :is([class^="leading_"], [class*=" leading_"])):has(> :is([class^="trailing_"], [class*=" trailing_"])) :is(button, [role="button"]):hover {
+    color: #fff;
+}
+
 :is([class^="sidebarList_"], [class*=" sidebarList_"]),
 :is([class^="chatContent_"], [class*=" chatContent_"]),
 :is([class^="membersWrap_"], [class*=" membersWrap_"]),
