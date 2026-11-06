@@ -286,7 +286,7 @@ nav[aria-label="Servers sidebar"] {
     margin: 0 !important;
     padding: 0 !important;
     border: 0 !important;
-    overflow: visible;
+    overflow: hidden;
     pointer-events: none;
     background: transparent !important;
     box-shadow: none !important;
