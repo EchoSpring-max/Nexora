@@ -191,7 +191,7 @@ body::after {
     border-right-color: color-mix(in srgb, var(--nts-surface-color) 96%, var(--nts-background)) !important;
 }
 
-:is([class^="sidebarList_"], [class*=" sidebarList_"]),
+:is([class^="sidebarList"], [class*=" sidebarList"]),
 :is([class^="chatContent_"], [class*=" chatContent_"]),
 :is([class^="membersWrap_"], [class*=" membersWrap_"]),
 :is([class^="panels_"], [class*=" panels_"]),
@@ -264,10 +264,16 @@ body::after {
     padding: var(--nts-spacing);
 }
 
-:is([class^="sidebarList_"], [class*=" sidebarList_"]) {
+:is([class^="sidebarList"], [class*=" sidebarList"]) {
     width: var(--nts-channel-width);
-    border-left: 0;
-    border-radius: 0 var(--nts-radius) var(--nts-radius) 0;
+    border-left: 0 !important;
+    border-radius: 0 var(--nts-radius) var(--nts-radius) 0 !important;
+}
+
+/* Give the server icons breathing room below Discord's desktop title bar. */
+nav[aria-label="Servers sidebar"] [role="tree"] {
+    box-sizing: border-box;
+    padding-block-start: 6px;
 }
 
 :is([class^="membersWrap_"], [class*=" membersWrap_"]) {

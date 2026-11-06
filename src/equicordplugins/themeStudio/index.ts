@@ -66,7 +66,7 @@ function refreshStyle() {
         --nts-message-animation: ${s.animations ? "nts-message-in" : "none"};
     }
     ${s.showMembers ? "" : ':is([class^="membersWrap_"], [class*=" membersWrap_"]) { display: none !important; }'}
-    ${s.showChannelSidebar ? "" : ':is([class^="sidebarList_"], [class*=" sidebarList_"]) { display: none !important; }'}
+    ${s.showChannelSidebar ? "" : ':is([class^="sidebarList"], [class*=" sidebarList"]) { display: none !important; }'}
     ${s.showServerList ? "" : ':is([class^="guilds_"], [class*=" guilds_"]) { display: none !important; }'}
     ${s.showUserPanel ? "" : ':is([class^="panels_"], [class*=" panels_"]) { display: none !important; }'}
     ${s.showSearch ? "" : ':is([class^="toolbar_"], [class*=" toolbar_"]) :is([class^="search_"], [class*=" search_"]) { display: none !important; }'}
