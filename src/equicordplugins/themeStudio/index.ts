@@ -48,7 +48,7 @@ function refreshStyle() {
         --nts-muted: ${s.unifiedTextColor ? s.text : s.muted};
         --nts-wallpaper: ${wallpaper};
         --nts-wallpaper-dim: ${s.wallpaperDim / 100};
-        --nts-blur: ${s.blur}px;
+        --nts-blur: ${Math.round(s.blur * 1.75)}px;
         --nts-radius: ${s.rounding}px;
         --nts-spacing: ${s.spacing}px;
         --nts-font-size: ${s.fontSize}px;
@@ -167,9 +167,9 @@ export const settings = definePluginSettings({
     },
     blur: {
         type: OptionType.SLIDER,
-        description: "Glass blur strength.",
-        markers: [0, 4, 8, 12, 18, 24, 32],
-        default: 14,
+        description: "Frosted-glass blur intensity. Higher values soften the wallpaper behind panels.",
+        markers: [0, 8, 14, 20, 28, 40, 56],
+        default: 28,
         stickToMarkers: false,
         ...live
     },

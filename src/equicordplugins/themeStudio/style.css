@@ -122,7 +122,7 @@ body::after {
     border-radius: var(--nts-radius);
     background: var(--nts-surface);
     box-shadow: 0 12px 36px rgb(0 0 0 / 20%);
-    backdrop-filter: blur(var(--nts-blur));
+    backdrop-filter: blur(var(--nts-blur)) saturate(1.18);
 }
 
 /* Discord gives these inner Home/Friends layers their own fills; clear them so the glass parent can work. */
