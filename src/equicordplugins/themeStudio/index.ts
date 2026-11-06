@@ -21,15 +21,8 @@ let greeting: HTMLDivElement | null = null;
 let greetingTimer: number | undefined;
 let removeTimer: number | undefined;
 
-const STOCK_OVERLAY_WINDOWS = new Set([
-    "DISCORD_OVERLAY_POPOUT",
-    "DISCORD_OutOfProcessOverlay",
-    "DISCORD_CHANNEL_CALL_POPOUT",
-    "DISCORD_CALL_TILE_POPOUT"
-]);
-
 function isOverlayWindow() {
-    return Boolean(window.__OVERLAY__) || STOCK_OVERLAY_WINDOWS.has(window.name);
+    return Boolean(window.__OVERLAY__ || window.opener || window.name.startsWith("DISCORD_"));
 }
 
 function validColor(value: string) {
@@ -381,9 +374,8 @@ export default definePlugin({
         }
     },
     start() {
-        // Keep Theme Studio styles out of Discord's game overlay renderer.
-        // Its transparent full-screen window sits over the game, so themed glass
-        // backgrounds there tint the game itself.
+        // Keep Theme Studio out of all detached Discord windows, including game
+        // and call overlays. ThemeStudio is intended for the main Discord window.
         if (isOverlayWindow()) return;
 
         enableStyle(style);

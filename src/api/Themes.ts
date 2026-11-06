@@ -29,6 +29,10 @@ let themesStyle: HTMLStyleElement;
 
 const themeChangeListeners = new Set<() => void>();
 
+function isDetachedDiscordWindow() {
+    return Boolean(window.__OVERLAY__ || window.opener || window.name.startsWith("DISCORD_"));
+}
+
 function getThemeActivationMode(themeId: string) {
     return Settings.themeActivationModes?.[themeId] ?? "always";
 }
@@ -40,6 +44,8 @@ function shouldApplyTheme(mode: ThemeActivationMode, activeTheme?: "light" | "da
 }
 
 async function toggle(isEnabled: boolean) {
+    if (isDetachedDiscordWindow()) return;
+
     if (!style) {
         if (isEnabled) {
             style = createAndAppendStyle("vencord-custom-css", userStyleRootNode);
@@ -59,6 +65,8 @@ async function toggle(isEnabled: boolean) {
 let previousThemeBlobObjectURLs = [] as string[];
 
 async function initThemes() {
+    if (isDetachedDiscordWindow()) return;
+
     themesStyle ??= createAndAppendStyle("vencord-themes", userStyleRootNode);
 
     const { enabledThemeLinks, enabledThemes } = Settings;
@@ -114,7 +122,7 @@ async function initThemes() {
     themeChangeListeners.forEach(listener => listener());
 }
 
-function applyToPopout(popoutWindow: Window | undefined, key: string) {
+function applyToPopout(popoutWindow: Window | undefined) {
     if (!popoutWindow?.document) return;
 
     const doc = popoutWindow.document;
@@ -128,9 +136,8 @@ function applyToPopout(popoutWindow: Window | undefined, key: string) {
         managedStyleRootNode.cloneNode(true)
     );
 
-    if (key !== "DISCORD_OutOfProcessOverlay") {
-        clonedRoot.append(userStyleRootNode.cloneNode(true));
-    }
+    // Themes and QuickCSS are for the main Discord window only. Applying them
+    // to detached windows can tint Discord's game and call overlays.
 
     doc.documentElement.appendChild(clonedRoot);
 }
@@ -139,12 +146,12 @@ function updatePopoutWindows() {
     if (!PopoutWindowStore) return;
 
     for (const key of PopoutWindowStore.getWindowKeys()) {
-        applyToPopout(PopoutWindowStore.getWindow(key), key);
+        applyToPopout(PopoutWindowStore.getWindow(key));
     }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    if (IS_USERSCRIPT) return;
+    if (IS_USERSCRIPT || isDetachedDiscordWindow()) return;
 
     initThemes();
 
@@ -159,7 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const { discordPopoutEvent } = event.data || {};
         if (discordPopoutEvent?.type !== "loaded") return;
 
-        applyToPopout(PopoutWindowStore.getWindow(discordPopoutEvent.key), discordPopoutEvent.key);
+        applyToPopout(PopoutWindowStore.getWindow(discordPopoutEvent.key));
     });
 
     if (!IS_WEB) {
@@ -168,7 +175,7 @@ document.addEventListener("DOMContentLoaded", () => {
 }, { once: true });
 
 export function initQuickCssThemeStore(themeStore: ThemeStore) {
-    if (IS_USERSCRIPT) return;
+    if (IS_USERSCRIPT || isDetachedDiscordWindow()) return;
 
     initThemes();
 

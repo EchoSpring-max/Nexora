@@ -372,8 +372,14 @@ static void WriteEmbeddedAsar(string targetPath) {
 }
 
 static string? FindNexoraLoader(string resourcesDirectory, string modAsar) {
-    static bool ReferencesNexoraBuild(string path, string buildPath) =>
-        File.Exists(path) && File.ReadAllText(path).Contains(buildPath, StringComparison.OrdinalIgnoreCase);
+    static bool ReferencesNexoraBuild(string path, string buildPath) {
+        if (!File.Exists(path)) return false;
+
+        var stub = File.ReadAllText(path);
+        var escapedBuildPath = buildPath.Replace("\\", "\\\\");
+        return stub.Contains(buildPath, StringComparison.OrdinalIgnoreCase)
+            || stub.Contains(escapedBuildPath, StringComparison.OrdinalIgnoreCase);
+    }
 
     var currentLoader = Path.Combine(resourcesDirectory, "app");
     if (ReferencesNexoraBuild(Path.Combine(currentLoader, "index.js"), modAsar))
