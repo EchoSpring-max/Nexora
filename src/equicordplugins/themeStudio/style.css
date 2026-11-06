@@ -266,6 +266,8 @@ body::after {
 
 :is([class^="sidebarList_"], [class*=" sidebarList_"]) {
     width: var(--nts-channel-width);
+    border-left: 0;
+    border-radius: 0 var(--nts-radius) var(--nts-radius) 0;
 }
 
 :is([class^="membersWrap_"], [class*=" membersWrap_"]) {
