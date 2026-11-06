@@ -103,11 +103,12 @@ export function parseDevs() {
 
 export function parseEquicordDevs() {
     const file = createSourceFile("constants.ts", readFileSync("src/utils/constants.ts", "utf8"), ScriptTarget.Latest);
+    let parsed = false;
 
     for (const child of file.getChildAt(0).getChildren()) {
         if (!isVariableStatement(child)) continue;
 
-        const devsDeclaration = child.declarationList.declarations.find(d => hasName(d, "EquicordDevs"));
+        const devsDeclaration = child.declarationList.declarations.find(d => hasName(d, "EquicordDevs") || hasName(d, "NexoraDevs"));
         if (!devsDeclaration?.initializer || !isCallExpression(devsDeclaration.initializer)) continue;
 
         const value = devsDeclaration.initializer.arguments[0];
@@ -125,11 +126,10 @@ export function parseEquicordDevs() {
                 id: (getObjectProp(value, "id") as BigIntLiteral).text.slice(0, -1)
             };
         }
-
-        return;
+        parsed = true;
     }
 
-    throw new Error("Could not find EquicordDevs constant");
+    if (!parsed) throw new Error("Could not find EquicordDevs constant");
 }
 
 export async function parseFile(fileName: string) {
