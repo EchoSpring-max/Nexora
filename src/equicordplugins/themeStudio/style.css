@@ -137,6 +137,29 @@ body::after {
     color: #fff;
 }
 
+/* Tooltips need their own opaque-enough surface so sidebar labels do not look clipped. */
+:is([class^="tooltip_"], [class*=" tooltip_"]) {
+    z-index: 10000;
+    overflow: visible;
+    border: 1px solid color-mix(in srgb, var(--nts-text) 13%, transparent);
+    border-radius: calc(var(--nts-radius) * 0.55) !important;
+    color: var(--nts-text) !important;
+    background: color-mix(in srgb, var(--nts-surface-color) 96%, var(--nts-background)) !important;
+    box-shadow: 0 9px 26px rgb(0 0 0 / 42%), 0 0 16px color-mix(in srgb, var(--nts-accent) 9%, transparent);
+    backdrop-filter: blur(var(--nts-blur)) saturate(1.12);
+}
+
+:is([class^="tooltipContent_"], [class*=" tooltipContent_"]) {
+    padding: 7px 11px;
+    font-weight: 600;
+    line-height: 18px;
+    white-space: nowrap;
+}
+
+:is([class^="tooltipPointer_"], [class*=" tooltipPointer_"]) {
+    border-right-color: color-mix(in srgb, var(--nts-surface-color) 96%, var(--nts-background)) !important;
+}
+
 :is([class^="sidebarList_"], [class*=" sidebarList_"]),
 :is([class^="chatContent_"], [class*=" chatContent_"]),
 :is([class^="membersWrap_"], [class*=" membersWrap_"]),
