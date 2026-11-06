@@ -21,6 +21,17 @@ let greeting: HTMLDivElement | null = null;
 let greetingTimer: number | undefined;
 let removeTimer: number | undefined;
 
+const STOCK_OVERLAY_WINDOWS = new Set([
+    "DISCORD_OVERLAY_POPOUT",
+    "DISCORD_OutOfProcessOverlay",
+    "DISCORD_CHANNEL_CALL_POPOUT",
+    "DISCORD_CALL_TILE_POPOUT"
+]);
+
+function isOverlayWindow() {
+    return Boolean(window.__OVERLAY__) || STOCK_OVERLAY_WINDOWS.has(window.name);
+}
+
 function validColor(value: string) {
     return /^#[\da-f]{6}$/i.test(value) || "Use a six digit hex color such as #8b5cf6.";
 }
@@ -373,7 +384,7 @@ export default definePlugin({
         // Keep Theme Studio styles out of Discord's game overlay renderer.
         // Its transparent full-screen window sits over the game, so themed glass
         // backgrounds there tint the game itself.
-        if (window.__OVERLAY__) return;
+        if (isOverlayWindow()) return;
 
         enableStyle(style);
         SettingsPlugin.customEntries.push({
@@ -391,7 +402,7 @@ export default definePlugin({
         showGreeting();
     },
     stop() {
-        if (window.__OVERLAY__) return;
+        if (isOverlayWindow()) return;
 
         if (greetingTimer !== undefined) clearTimeout(greetingTimer);
         if (removeTimer !== undefined) clearTimeout(removeTimer);
