@@ -5,13 +5,33 @@
  */
 
 import { definePluginSettings } from "@api/Settings";
-import { disableStyle } from "@api/Styles";
+import { disableStyle, enableStyle, requireStyle } from "@api/Styles";
+import { PaintbrushIcon } from "@components/Icons";
+import SettingsPlugin from "@plugins/_core/settings";
 import { NexoraDevs } from "@utils/constants";
-import definePlugin, { OptionType } from "@utils/types";
+import { createAndAppendStyle } from "@utils/css";
+import { removeFromArray } from "@utils/misc";
+import definePlugin, { OptionType, StartAt } from "@utils/types";
+import { SettingsRouter, UserStore } from "@webpack/common";
 
 import style from "./style.css?managed";
 
 let variableStyle: HTMLStyleElement | null = null;
+let greeting: HTMLDivElement | null = null;
+let greetingTimer: number | undefined;
+let removeTimer: number | undefined;
+
+const STOCK_OVERLAY_WINDOWS = new Set([
+    "DISCORD_OVERLAY_POPOUT",
+    "DISCORD_OutOfProcessOverlay",
+    "DISCORD_CHANNEL_CALL_POPOUT",
+    "DISCORD_CALL_TILE_POPOUT"
+]);
+
+function isOverlayWindow() {
+    return Boolean(window.__OVERLAY__) || STOCK_OVERLAY_WINDOWS.has(window.name);
+}
+
 function validColor(value: string) {
     return /^#[\da-f]{6}$/i.test(value) || "Use a six digit hex color such as #8b5cf6.";
 }
@@ -67,15 +87,20 @@ function refreshStyle() {
     ${s.customCss}`;
 }
 
-function clearThemeStudio() {
-    document.documentElement.classList.remove("vc-theme-studio-message-actions");
-    document.documentElement.classList.remove("vc-theme-studio-name-bubbles");
-    document.documentElement.classList.remove("vc-theme-studio-spotify");
-    document.documentElement.classList.remove("vc-theme-studio-music-controls");
-    document.querySelectorAll(".vc-theme-studio-greeting").forEach(element => element.remove());
-    document.getElementById("vc-theme-studio-vars")?.remove();
-    variableStyle = null;
-    disableStyle(style);
+function showGreeting() {
+    if (!settings.store.showGreeting) return;
+
+    const user = UserStore.getCurrentUser();
+    const name = user?.globalName || user?.username || "friend";
+    greeting = document.createElement("div");
+    greeting.className = "vc-theme-studio-greeting";
+    greeting.textContent = settings.store.greetingText.replaceAll("{name}", name);
+    document.body.append(greeting);
+    greetingTimer = window.setTimeout(() => greeting?.classList.add("vc-theme-studio-greeting-leaving"), 3500);
+    removeTimer = window.setTimeout(() => {
+        greeting?.remove();
+        greeting = null;
+    }, 4000);
 }
 
 const live = { onChange: refreshStyle };
@@ -344,14 +369,54 @@ export const settings = definePluginSettings({
 
 export default definePlugin({
     name: "ThemeStudio",
-    description: "Temporarily disabled while the Discord overlay issue is being addressed.",
+    description: "A calm glass theme with live controls for Discord's colors, layout, motion and visibility.",
     authors: [NexoraDevs.EchoSpring],
     tags: ["Appearance", "Customisation"],
-    hidden: true,
+    dependencies: ["Settings", "ShowAllMessageButtons"],
+    settings,
+    startAt: StartAt.WebpackReady,
+    toolboxActions: {
+        "Open Theme Studio"() {
+            SettingsRouter.openUserSettings("nexora_theme_studio_panel");
+        }
+    },
     start() {
-        clearThemeStudio();
+        // Keep Theme Studio styles out of Discord's game overlay renderer.
+        // Its transparent full-screen window sits over the game, so themed glass
+        // backgrounds there tint the game itself.
+        if (isOverlayWindow()) return;
+
+        enableStyle(style);
+        SettingsPlugin.customEntries.push({
+            key: "nexora_theme_studio",
+            title: "Theme Studio",
+            Component: require("./SettingsTab").default,
+            Icon: PaintbrushIcon
+        });
+        variableStyle = createAndAppendStyle("vc-theme-studio-vars", document.head);
+        // Keep the stylesheet local to this renderer instead of copying it into
+        // Discord's separate game overlay window.
+        const themeStyle = requireStyle(style).dom;
+        if (themeStyle) document.head.append(themeStyle);
+        refreshStyle();
+        showGreeting();
     },
     stop() {
-        clearThemeStudio();
+        if (isOverlayWindow()) return;
+
+        if (greetingTimer !== undefined) clearTimeout(greetingTimer);
+        if (removeTimer !== undefined) clearTimeout(removeTimer);
+        greeting?.remove();
+        greeting = null;
+        greetingTimer = undefined;
+        removeTimer = undefined;
+        document.documentElement.classList.remove("vc-theme-studio-message-actions");
+        document.documentElement.classList.remove("vc-theme-studio-name-bubbles");
+        document.documentElement.classList.remove("vc-theme-studio-spotify");
+        document.documentElement.classList.remove("vc-theme-studio-music-controls");
+        removeFromArray(SettingsPlugin.customEntries, entry => entry.key === "nexora_theme_studio");
+        disableStyle(style);
+        variableStyle?.remove();
+        variableStyle = null;
     }
 });
