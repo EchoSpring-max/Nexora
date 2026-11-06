@@ -1,0 +1,100 @@
+/*
+ * Vencord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ */
+
+.vc-theme-studio-editor-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 16px;
+    padding: 20px;
+    border: 1px solid color-mix(in srgb, var(--nts-accent) 30%, var(--border-subtle));
+    border-radius: 16px;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--nts-accent) 14%, var(--background-surface-high)), color-mix(in srgb, var(--nts-accent-secondary) 8%, var(--background-surface-high)));
+}
+
+.vc-theme-studio-editor-hero h2,
+.vc-theme-studio-editor-section-heading h2,
+.vc-theme-studio-editor-presets h2 {
+    margin-bottom: 4px;
+}
+
+.vc-theme-studio-editor-swatch {
+    position: relative;
+    width: 92px;
+    height: 58px;
+    flex: 0 0 auto;
+    border: 1px solid color-mix(in srgb, var(--text-default) 14%, transparent);
+    border-radius: 14px;
+    box-shadow: 0 10px 24px rgb(0 0 0 / 24%);
+}
+
+.vc-theme-studio-editor-swatch i {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    width: 19px;
+    height: 19px;
+    border: 2px solid var(--background-base-lowest);
+    border-radius: 50%;
+}
+
+.vc-theme-studio-editor-swatch i + i {
+    right: 24px;
+}
+
+.vc-theme-studio-editor-presets,
+.vc-theme-studio-editor-section {
+    margin-bottom: 16px;
+    padding: 16px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    background: var(--background-surface-high);
+}
+
+.vc-theme-studio-editor-preset-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.vc-theme-studio-editor-preset-row button {
+    gap: 7px;
+}
+
+.vc-theme-studio-editor-preset-dot {
+    width: 12px;
+    height: 12px;
+    border: 1px solid rgb(255 255 255 / 24%);
+    border-radius: 50%;
+    box-shadow: 0 0 8px currentcolor;
+}
+
+.vc-theme-studio-editor-section-heading {
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.vc-theme-studio-editor-section .vc-plugins-settings {
+    margin-top: 4px;
+}
+
+.vc-theme-studio-editor-section .vc-plugins-setting-section:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+@media (width <= 620px) {
+    .vc-theme-studio-editor-hero {
+        align-items: flex-start;
+    }
+
+    .vc-theme-studio-editor-swatch {
+        width: 70px;
+    }
+}

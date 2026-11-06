@@ -8,10 +8,13 @@ import "./style.css";
 
 import { definePluginSettings } from "@api/Settings";
 import { managedStyleRootNode } from "@api/Styles";
+import { PaintbrushIcon } from "@components/Icons";
+import SettingsPlugin from "@plugins/_core/settings";
 import { NexoraDevs } from "@utils/constants";
 import { createAndAppendStyle } from "@utils/css";
+import { removeFromArray } from "@utils/misc";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
-import { UserStore } from "@webpack/common";
+import { SettingsRouter, UserStore } from "@webpack/common";
 
 let variableStyle: HTMLStyleElement | null = null;
 let greeting: HTMLDivElement | null = null;
@@ -88,7 +91,7 @@ function showGreeting() {
 }
 
 const live = { onChange: refreshStyle };
-const settings = definePluginSettings({
+export const settings = definePluginSettings({
     accent: {
         type: OptionType.STRING,
         description: "Primary accent color.",
@@ -350,10 +353,21 @@ export default definePlugin({
     description: "A calm glass theme with live controls for Discord's colors, layout, motion and visibility.",
     authors: [NexoraDevs.EchoSpring],
     tags: ["Appearance", "Customisation"],
-    dependencies: ["ShowAllMessageButtons"],
+    dependencies: ["Settings", "ShowAllMessageButtons"],
     settings,
     startAt: StartAt.WebpackReady,
+    toolboxActions: {
+        "Open Theme Studio"() {
+            SettingsRouter.openUserSettings("nexora_theme_studio_panel");
+        }
+    },
     start() {
+        SettingsPlugin.customEntries.push({
+            key: "nexora_theme_studio",
+            title: "Theme Studio",
+            Component: require("./SettingsTab").default,
+            Icon: PaintbrushIcon
+        });
         variableStyle = createAndAppendStyle("vc-theme-studio-vars", managedStyleRootNode);
         refreshStyle();
         showGreeting();
@@ -368,6 +382,7 @@ export default definePlugin({
         document.documentElement.classList.remove("vc-theme-studio-message-actions");
         document.documentElement.classList.remove("vc-theme-studio-name-bubbles");
         document.documentElement.classList.remove("vc-theme-studio-spotify");
+        removeFromArray(SettingsPlugin.customEntries, entry => entry.key === "nexora_theme_studio");
         variableStyle?.remove();
         variableStyle = null;
     }
