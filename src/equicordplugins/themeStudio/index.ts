@@ -4,10 +4,8 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "./style.css";
-
 import { definePluginSettings } from "@api/Settings";
-import { managedStyleRootNode } from "@api/Styles";
+import { disableStyle, enableStyle, requireStyle } from "@api/Styles";
 import { PaintbrushIcon } from "@components/Icons";
 import SettingsPlugin from "@plugins/_core/settings";
 import { NexoraDevs } from "@utils/constants";
@@ -15,6 +13,8 @@ import { createAndAppendStyle } from "@utils/css";
 import { removeFromArray } from "@utils/misc";
 import definePlugin, { OptionType, StartAt } from "@utils/types";
 import { SettingsRouter, UserStore } from "@webpack/common";
+
+import style from "./style.css?managed";
 
 let variableStyle: HTMLStyleElement | null = null;
 let greeting: HTMLDivElement | null = null;
@@ -370,17 +370,29 @@ export default definePlugin({
         }
     },
     start() {
+        // Keep Theme Studio styles out of Discord's game overlay renderer.
+        // Its transparent full-screen window sits over the game, so themed glass
+        // backgrounds there tint the game itself.
+        if (window.__OVERLAY__) return;
+
+        enableStyle(style);
         SettingsPlugin.customEntries.push({
             key: "nexora_theme_studio",
             title: "Theme Studio",
             Component: require("./SettingsTab").default,
             Icon: PaintbrushIcon
         });
-        variableStyle = createAndAppendStyle("vc-theme-studio-vars", managedStyleRootNode);
+        variableStyle = createAndAppendStyle("vc-theme-studio-vars", document.head);
+        // Keep the stylesheet local to this renderer instead of copying it into
+        // Discord's separate game overlay window.
+        const themeStyle = requireStyle(style).dom;
+        if (themeStyle) document.head.append(themeStyle);
         refreshStyle();
         showGreeting();
     },
     stop() {
+        if (window.__OVERLAY__) return;
+
         if (greetingTimer !== undefined) clearTimeout(greetingTimer);
         if (removeTimer !== undefined) clearTimeout(removeTimer);
         greeting?.remove();
@@ -392,6 +404,7 @@ export default definePlugin({
         document.documentElement.classList.remove("vc-theme-studio-spotify");
         document.documentElement.classList.remove("vc-theme-studio-music-controls");
         removeFromArray(SettingsPlugin.customEntries, entry => entry.key === "nexora_theme_studio");
+        disableStyle(style);
         variableStyle?.remove();
         variableStyle = null;
     }
