@@ -230,6 +230,7 @@ nav[aria-label="Servers sidebar"] {
 }
 
 :is([class^="panels_"], [class*=" panels_"]) {
+    bottom: 0 !important;
     overflow: visible;
     border: 0;
     border-radius: 0;
@@ -270,15 +271,37 @@ nav[aria-label="Servers sidebar"] {
     border-radius: calc(var(--nts-radius) * 0.7) !important;
 }
 
-/* Clip quest and account-panel artwork to the same soft silhouette. */
-:is([class^="panels_"], [class*=" panels_"]) > :is([class^="questProgressWrapper_"], [class*=" questProgressWrapper_"]) {
-    overflow: clip;
-    margin: 8px 8px 0;
-    border: 1px solid color-mix(in srgb, var(--nts-text) 9%, transparent);
-    border-radius: 0;
-    background: var(--nts-surface);
-    box-shadow: none;
-    backdrop-filter: blur(var(--nts-blur)) saturate(1.16);
+/* Collapse Discord's quest card into its existing picture and progress ring in the server rail. */
+:is([class^="panels_"], [class*=" panels_"]) :is([class^="wrapper_"], [class*=" wrapper_"]):has(:is([class^="questProgressWrapper_"], [class*=" questProgressWrapper_"])),
+:is([class^="panels_"], [class*=" panels_"]) :is([class^="contentWrapper_"], [class*=" contentWrapper_"]):has(:is([class^="questProgressWrapper_"], [class*=" questProgressWrapper_"])),
+:is([class^="panels_"], [class*=" panels_"]) :is([class^="contentCollapsed_"], [class*=" contentCollapsed_"]):has(:is([class^="questProgressWrapper_"], [class*=" questProgressWrapper_"])) {
+    box-sizing: border-box;
+    width: 54px !important;
+    min-width: 54px !important;
+    height: 54px !important;
+    min-height: 54px !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+:is([class^="panels_"], [class*=" panels_"]) :is([class^="contentCollapsed_"], [class*=" contentCollapsed_"]):has(:is([class^="questProgressWrapper_"], [class*=" questProgressWrapper_"])) {
+    padding: 6px !important;
+}
+
+:is([class^="panels_"], [class*=" panels_"]) :is([class^="questProgressWrapper_"], [class*=" questProgressWrapper_"]) {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+}
+
+:is([class^="panels_"], [class*=" panels_"]) :is(
+    [class^="questProgressCopy_"],
+    [class*=" questProgressCopy_"],
+    [class^="headerText_"],
+    [class*=" headerText_"]
+) {
+    display: none !important;
 }
 
 :is([class^="panels_"], [class*=" panels_"]) > :last-child {
@@ -304,7 +327,7 @@ nav[aria-label="Servers sidebar"] {
     min-width: 0;
     overflow-x: clip;
     gap: var(--nts-spacing);
-    padding: var(--nts-spacing);
+    padding: var(--nts-spacing) var(--nts-spacing) 0;
 }
 
 :is([class^="sidebarList"], [class*=" sidebarList"]) {
