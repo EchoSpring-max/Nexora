@@ -32,6 +32,7 @@ function refreshStyle() {
     document.documentElement.classList.toggle("vc-theme-studio-message-actions", s.enhancedMessageActions);
     document.documentElement.classList.toggle("vc-theme-studio-name-bubbles", s.nameBubbles);
     document.documentElement.classList.toggle("vc-theme-studio-spotify", s.spotifyPanel);
+    document.documentElement.classList.toggle("vc-theme-studio-music-controls", s.spotifyPanel);
     const wallpaper = s.wallpaper.trim()
         ? `url("${s.wallpaper.replace(/["\\]/g, "\\$&")}")`
         : "none";
@@ -58,7 +59,8 @@ function refreshStyle() {
         --nts-name-bubble-hover-opacity: ${s.nameBubbleHoverOpacity}%;
         --nts-name-bubble-padding: ${s.nameBubblePadding}px;
         --nts-name-bubble-radius: ${s.nameBubbleRounding}px;
-        --nts-spotify-accent: ${s.spotifyUseThemeAccent ? "var(--nts-accent)" : "#1db954"};
+        --nts-music-accent: ${s.spotifyUseThemeAccent ? "var(--nts-accent)" : "#1db954"};
+        --nts-spotify-accent: var(--nts-music-accent);
         --nts-transition: ${s.animations ? "160ms" : "0ms"};
         --nts-transition-slow: ${s.animations ? "240ms" : "0ms"};
         --nts-message-animation: ${s.animations ? "nts-message-in" : "none"};
@@ -143,9 +145,9 @@ export const settings = definePluginSettings({
     },
     surfaceOpacity: {
         type: OptionType.SLIDER,
-        description: "Panel opacity.",
+        description: "Glass panel opacity. Lower values reveal more of the wallpaper.",
         markers: [35, 50, 65, 80, 92, 100],
-        default: 82,
+        default: 68,
         stickToMarkers: false,
         ...live
     },
@@ -329,13 +331,13 @@ export const settings = definePluginSettings({
     },
     spotifyPanel: {
         type: OptionType.BOOLEAN,
-        description: "Style the MusicControls Spotify player to match Theme Studio.",
+        description: "Style MusicControls players and lyrics in the user panel to match Theme Studio.",
         default: true,
         ...live
     },
     spotifyUseThemeAccent: {
         type: OptionType.BOOLEAN,
-        description: "Use the theme accent for Spotify controls instead of Spotify green.",
+        description: "Use the theme accent for MusicControls instead of each service's default color.",
         default: true,
         ...live
     },
@@ -382,6 +384,7 @@ export default definePlugin({
         document.documentElement.classList.remove("vc-theme-studio-message-actions");
         document.documentElement.classList.remove("vc-theme-studio-name-bubbles");
         document.documentElement.classList.remove("vc-theme-studio-spotify");
+        document.documentElement.classList.remove("vc-theme-studio-music-controls");
         removeFromArray(SettingsPlugin.customEntries, entry => entry.key === "nexora_theme_studio");
         variableStyle?.remove();
         variableStyle = null;

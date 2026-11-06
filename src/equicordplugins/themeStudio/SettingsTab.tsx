@@ -43,9 +43,9 @@ const SECTIONS = [
         settings: ["nameBubbles", "nameBubbleOpacity", "nameBubbleHoverOpacity", "nameBubblePadding", "nameBubbleRounding"]
     },
     {
-        id: "spotify",
-        title: "Spotify Player",
-        description: "Blend MusicControls into the user panel without disturbing account or quest cards.",
+        id: "music-controls",
+        title: "MusicControls",
+        description: "Blend MusicControls players and lyrics into the user panel without disturbing account or quest cards.",
         settings: ["spotifyPanel", "spotifyUseThemeAccent"]
     },
     {

@@ -29,24 +29,25 @@
 }
 
 :is(.theme-dark, .theme-darker, .theme-midnight) {
-    --background-primary: var(--nts-surface);
-    --background-secondary: var(--nts-surface);
+    /* Keep Discord's nested layers from stacking into an opaque wall over the wallpaper. */
+    --background-primary: transparent;
+    --background-secondary: transparent;
     --background-secondary-alt: var(--nts-surface-strong);
-    --background-tertiary: color-mix(in srgb, var(--nts-background) 90%, transparent);
+    --background-tertiary: color-mix(in srgb, var(--nts-background) 68%, transparent);
     --background-accent: color-mix(in srgb, var(--nts-accent) 25%, var(--nts-surface));
     --background-floating: var(--nts-surface-strong);
-    --background-base-lowest: color-mix(in srgb, var(--nts-background) 94%, transparent);
-    --background-base-lower: color-mix(in srgb, var(--nts-surface-color) 62%, transparent);
-    --background-base-low: color-mix(in srgb, var(--nts-surface-color) 70%, transparent);
-    --background-surface-high: color-mix(in srgb, var(--nts-surface-color) 84%, transparent);
-    --background-surface-higher: color-mix(in srgb, var(--nts-surface-color) 90%, transparent);
-    --background-surface-highest: color-mix(in srgb, var(--nts-surface-color) 96%, transparent);
+    --background-base-lowest: color-mix(in srgb, var(--nts-background) 72%, transparent);
+    --background-base-lower: color-mix(in srgb, var(--nts-surface-color) 42%, transparent);
+    --background-base-low: color-mix(in srgb, var(--nts-surface-color) 52%, transparent);
+    --background-surface-high: color-mix(in srgb, var(--nts-surface-color) 66%, transparent);
+    --background-surface-higher: color-mix(in srgb, var(--nts-surface-color) 74%, transparent);
+    --background-surface-highest: color-mix(in srgb, var(--nts-surface-color) 82%, transparent);
     --modal-background: var(--nts-surface-strong);
     --modal-footer-background: var(--nts-surface);
     --home-background: transparent;
-    --chat-background-default: color-mix(in srgb, var(--nts-surface-color) 72%, transparent);
-    --input-background: color-mix(in srgb, var(--nts-background) 72%, transparent);
-    --channeltextarea-background: color-mix(in srgb, var(--nts-background) 72%, transparent);
+    --chat-background-default: transparent;
+    --input-background: color-mix(in srgb, var(--nts-background) 58%, transparent);
+    --channeltextarea-background: color-mix(in srgb, var(--nts-background) 58%, transparent);
     --text-normal: var(--nts-text);
     --text-default: var(--nts-text);
     --header-primary: var(--nts-text);
@@ -97,12 +98,23 @@ body::after {
 :is([class^="sidebarList_"], [class*=" sidebarList_"]),
 :is([class^="chatContent_"], [class*=" chatContent_"]),
 :is([class^="membersWrap_"], [class*=" membersWrap_"]),
-:is([class^="panels_"], [class*=" panels_"]) {
+:is([class^="panels_"], [class*=" panels_"]),
+:is([class^="peopleColumn_"], [class*=" peopleColumn_"]),
+:is([class^="nowPlayingColumn_"], [class*=" nowPlayingColumn_"]) {
     border: 1px solid color-mix(in srgb, var(--nts-text) 8%, transparent);
     border-radius: var(--nts-radius);
     background: var(--nts-surface);
     box-shadow: 0 12px 36px rgb(0 0 0 / 20%);
     backdrop-filter: blur(var(--nts-blur));
+}
+
+/* Discord gives these inner Home/Friends layers their own fills; clear them so the glass parent can work. */
+:is([class^="privateChannels_"], [class*=" privateChannels_"]),
+:is([class^="peopleList_"], [class*=" peopleList_"]),
+:is([class^="tabBody_"], [class*=" tabBody_"]),
+:is([class^="scroller_"], [class*=" scroller_"])[class*="people" i],
+:is([class^="scroller_"], [class*=" scroller_"])[class*="nowPlaying" i] {
+    background: transparent !important;
 }
 
 :is([class^="base_"], [class*=" base_"]) > :is([class^="content_"], [class*=" content_"]) {
@@ -446,6 +458,83 @@ button:hover {
 .vc-theme-studio-spotify :is(.vc-spotify-repeat-context, .vc-spotify-repeat-track, .vc-spotify-shuffle-on) {
     color: var(--nts-spotify-accent);
     background: color-mix(in srgb, var(--nts-spotify-accent) 14%, transparent);
+}
+
+/* MusicControls also supports Tidal, so keep both user-panel players visually consistent. */
+.vc-theme-studio-music-controls #eq-tdl-player {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    margin: 6px 8px 8px;
+    padding: 10px;
+    border: 1px solid color-mix(in srgb, var(--nts-music-accent) 24%, var(--nts-text) 6%);
+    border-radius: calc(var(--nts-radius) * 0.85);
+    background: color-mix(in srgb, var(--nts-surface-color) 88%, transparent);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 22%);
+    backdrop-filter: blur(calc(var(--nts-blur) + 2px));
+
+    --eq-tdl-slider-gradient: linear-gradient(90deg, var(--nts-music-accent), color-mix(in srgb, var(--nts-music-accent) 65%, var(--nts-accent-secondary)));
+    --eq-tdl-slider-grabber: var(--nts-music-accent);
+}
+
+.vc-theme-studio-music-controls #eq-tdl-player::before {
+    position: absolute;
+    z-index: -1;
+    inset: -24px;
+    content: "";
+    pointer-events: none;
+    opacity: 0.12;
+    background-image: linear-gradient(90deg, var(--nts-surface-color), transparent), var(--eq-tdl-track-image);
+    background-position: center;
+    background-size: cover;
+    filter: blur(18px) saturate(1.25);
+}
+
+.vc-theme-studio-music-controls #eq-tdl-info-wrapper {
+    height: 48px;
+    gap: 10px;
+}
+
+.vc-theme-studio-music-controls #eq-tdl-album-image {
+    width: 44px;
+    height: 44px;
+    flex: 0 0 44px;
+    border: 1px solid color-mix(in srgb, var(--nts-text) 10%, transparent);
+    border-radius: calc(var(--nts-radius) * 0.55);
+    box-shadow: 0 5px 14px rgb(0 0 0 / 28%);
+}
+
+.vc-theme-studio-music-controls :is(#eq-tdl-song-title, .eq-tdl-artist, .eq-tdl-album) {
+    color: var(--nts-text);
+}
+
+.vc-theme-studio-music-controls :is(.eq-tdl-secondary-song-info, .eq-tdl-progress-time) {
+    color: var(--nts-muted);
+}
+
+.vc-theme-studio-music-controls .eq-tdl-button {
+    margin: 0;
+    border-radius: calc(var(--nts-radius) * 0.55);
+    color: var(--nts-muted);
+    transition: color var(--nts-transition) ease, background-color var(--nts-transition) ease, transform var(--nts-transition) cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.vc-theme-studio-music-controls .eq-tdl-button:hover {
+    color: var(--nts-text);
+    background: color-mix(in srgb, var(--nts-music-accent) 15%, transparent);
+    transform: translateY(-1px) scale(1.06);
+}
+
+.vc-theme-studio-music-controls :is(.vc-spotify-lyrics, .eq-tidal-lyrics) {
+    margin-inline: 8px;
+    border-radius: calc(var(--nts-radius) * 0.75);
+    color: var(--nts-text);
+    background: color-mix(in srgb, var(--nts-surface-color) 80%, transparent);
+    backdrop-filter: blur(var(--nts-blur));
+}
+
+.vc-theme-studio-music-controls :is(.vc-spotify-lyrics-current, .eq-tidal-lyrics-current) {
+    color: var(--nts-music-accent);
 }
 
 ::selection {
