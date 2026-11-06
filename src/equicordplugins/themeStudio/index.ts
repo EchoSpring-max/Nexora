@@ -26,6 +26,7 @@ function refreshStyle() {
     if (!variableStyle) return;
 
     const s = settings.store;
+    document.documentElement.classList.toggle("vc-theme-studio-message-actions", s.enhancedMessageActions);
     const wallpaper = s.wallpaper.trim()
         ? `url("${s.wallpaper.replace(/["\\]/g, "\\$&")}")`
         : "none";
@@ -272,6 +273,12 @@ const settings = definePluginSettings({
         description: "Welcome text. Use {name} for your display name.",
         default: "Welcome back, {name}."
     },
+    enhancedMessageActions: {
+        type: OptionType.BOOLEAN,
+        description: "Use a larger colorful message toolbar with all available actions.",
+        default: true,
+        ...live
+    },
     customCss: {
         type: OptionType.STRING,
         description: "Advanced CSS overrides for anything not covered above.",
@@ -286,6 +293,7 @@ export default definePlugin({
     description: "A calm glass theme with live controls for Discord's colors, layout, motion and visibility.",
     authors: [NexoraDevs.EchoSpring],
     tags: ["Appearance", "Customisation"],
+    dependencies: ["ShowAllMessageButtons"],
     settings,
     startAt: StartAt.WebpackReady,
     start() {
@@ -300,6 +308,7 @@ export default definePlugin({
         greeting = null;
         greetingTimer = undefined;
         removeTimer = undefined;
+        document.documentElement.classList.remove("vc-theme-studio-message-actions");
         variableStyle?.remove();
         variableStyle = null;
     }
