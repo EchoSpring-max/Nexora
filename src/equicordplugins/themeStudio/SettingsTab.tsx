@@ -22,7 +22,7 @@ const SECTIONS = [
         id: "look",
         title: "Colors & Wallpaper",
         description: "Choose the palette, background image and overall surface strength.",
-        settings: ["accent", "accentSecondary", "background", "surface", "text", "muted", "wallpaper", "surfaceOpacity", "wallpaperDim"]
+        settings: ["accent", "accentSecondary", "background", "surface", "text", "unifiedTextColor", "muted", "wallpaper", "surfaceOpacity", "wallpaperDim"]
     },
     {
         id: "layout",

@@ -45,7 +45,7 @@ function refreshStyle() {
         --nts-surface: color-mix(in srgb, ${s.surface} ${s.surfaceOpacity}%, transparent);
         --nts-surface-strong: color-mix(in srgb, ${s.surface} ${Math.min(s.surfaceOpacity + 8, 100)}%, transparent);
         --nts-text: ${s.text};
-        --nts-muted: ${s.muted};
+        --nts-muted: ${s.unifiedTextColor ? s.text : s.muted};
         --nts-wallpaper: ${wallpaper};
         --nts-wallpaper-dim: ${s.wallpaperDim / 100};
         --nts-blur: ${s.blur}px;
@@ -124,14 +124,20 @@ export const settings = definePluginSettings({
     },
     text: {
         type: OptionType.STRING,
-        description: "Main text color.",
+        description: "Text color used throughout Discord.",
         default: "#f4f5fb",
         isValid: validColor,
         ...live
     },
+    unifiedTextColor: {
+        type: OptionType.BOOLEAN,
+        description: "Use the main text color for secondary, muted and placeholder text too.",
+        default: true,
+        ...live
+    },
     muted: {
         type: OptionType.STRING,
-        description: "Muted text and icon color.",
+        description: "Secondary text and icon color when unified text colors are disabled.",
         default: "#a8adc2",
         isValid: validColor,
         ...live
