@@ -292,6 +292,16 @@ nav[aria-label="Servers sidebar"] {
     box-shadow: none !important;
 }
 
+/* The compact quest control is display-only. Prevent Discord's hover state from
+ * expanding it, and remove every branch except the picture/progress-ring path. */
+:is([class^="panels_"], [class*=" panels_"]) > :is([class^="mask_"], [class*=" mask_"]):has(:is([class^="questProgressWrapper_"], [class*=" questProgressWrapper_"])) * {
+    pointer-events: none !important;
+}
+
+:is([class^="panels_"], [class*=" panels_"]) > :is([class^="mask_"], [class*=" mask_"]):has(:is([class^="questProgressWrapper_"], [class*=" questProgressWrapper_"])) *:not(:has(:is([class^="questProgressWrapper_"], [class*=" questProgressWrapper_"])), :is([class^="questProgressWrapper_"], [class*=" questProgressWrapper_"]), :is([class^="questProgressWrapper_"], [class*=" questProgressWrapper_"]) *) {
+    display: none !important;
+}
+
 :is([class^="panels_"], [class*=" panels_"]) > :is([class^="mask_"], [class*=" mask_"]) :is(
     [class^="wrapper_"],
     [class*=" wrapper_"],
