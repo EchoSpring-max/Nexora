@@ -38,7 +38,7 @@ static string InstallNexora(DiscordChannel selectedChannel) {
     var modAsar = Path.Combine(modDirectory, "desktop.asar");
 
     var alreadyPatched = File.Exists(backupAsar);
-    if (alreadyPatched && !IsNexoraStub(stubIndex, modAsar))
+    if (alreadyPatched && FindNexoraLoader(resourcesPath, modAsar) is null)
         throw new InvalidOperationException(
             "This Discord installation is already patched by a different client mod. " +
             "Uninstall that mod before installing Nexora."
@@ -58,6 +58,38 @@ static string InstallNexora(DiscordChannel selectedChannel) {
         return $"Updated Nexora for Discord {selectedChannel.DisplayName}.\n\n" +
             "You're ready to launch Discord.";
     }
+}
+
+static string UninstallNexora(DiscordChannel selectedChannel) {
+    if (IsDiscordRunning())
+        throw new InvalidOperationException("Discord is currently running. Fully close Discord and run the uninstaller again.");
+
+    var resourcesPath = FindNewestResourcesDirectory(selectedChannel);
+    var appAsar = Path.Combine(resourcesPath, "app.asar");
+    var backupAsar = Path.Combine(resourcesPath, "_app.asar");
+    var modAsar = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        ModDirectoryName,
+        "desktop.asar"
+    );
+
+    var loaderDirectory = FindNexoraLoader(resourcesPath, modAsar);
+    if (!File.Exists(backupAsar) || loaderDirectory is null)
+        throw new InvalidOperationException("This Discord installation is not patched by Nexora. Nothing was changed.");
+
+    // Keep the loader folder as a recovery copy. The original Discord archive is
+    // restored to app.asar, while the Nexora settings and theme data stay intact.
+    var loaderBackup = Path.Combine(resourcesPath, $"nexora-loader-backup-{DateTime.Now:yyyyMMddHHmmssfff}");
+    Directory.Move(loaderDirectory, loaderBackup);
+    try {
+        File.Move(backupAsar, appAsar);
+    } catch {
+        Directory.Move(loaderBackup, loaderDirectory);
+        throw;
+    }
+
+    return $"Uninstalled Nexora from Discord {selectedChannel.DisplayName}.\n\n" +
+        "Your Nexora settings, themes, and the old loader backup were kept. You can now install Nexora again.";
 }
 
 static void RunInstaller(DiscordChannel[] detectedChannels, string[] args) {
@@ -120,6 +152,8 @@ static void RunInstaller(DiscordChannel[] detectedChannels, string[] args) {
     var status = new Label { Text = detectedChannels.Length > 0 ? "Ready to install" : "Select Discord.exe to continue", AutoSize = true, Location = new Point(34, 257), ForeColor = muted, Font = new Font("Segoe UI", 9F) };
     var install = new Button { Text = "Install Nexora  →", Location = new Point(443, 231), Size = new Size(203, 47), FlatStyle = FlatStyle.Flat, BackColor = accent, ForeColor = Color.FromArgb(35, 22, 47), Font = new Font("Segoe UI", 10F, FontStyle.Bold), Cursor = Cursors.Hand };
     install.FlatAppearance.BorderSize = 0;
+    var uninstall = new Button { Text = "Uninstall Nexora", Location = new Point(443, 272), Size = new Size(203, 40), FlatStyle = FlatStyle.Flat, BackColor = surfaceAlt, ForeColor = text, Font = new Font("Segoe UI", 9F, FontStyle.Bold), Cursor = Cursors.Hand };
+    uninstall.FlatAppearance.BorderColor = Color.FromArgb(85, 77, 104);
     install.Click += async (_, _) => {
         if (channelPicker.SelectedItem is not DiscordChannel selected) {
             status.Text = "Choose a Discord installation first.";
@@ -148,7 +182,48 @@ static void RunInstaller(DiscordChannel[] detectedChannels, string[] args) {
         }
     };
 
-    content.Controls.AddRange([label, help, channelPicker, browse, notice, launch, status, install]);
+    uninstall.Click += async (_, _) => {
+        if (channelPicker.SelectedItem is not DiscordChannel selected) {
+            status.Text = "Choose a Discord installation first.";
+            status.ForeColor = Color.FromArgb(255, 150, 163);
+            return;
+        }
+
+        var confirmation = MessageBox.Show(
+            form,
+            "This will restore Discord's original app package and keep your Nexora settings and themes. Continue?",
+            "Uninstall Nexora",
+            MessageBoxButtons.YesNo,
+            MessageBoxIcon.Warning
+        );
+        if (confirmation != DialogResult.Yes) return;
+
+        install.Enabled = false;
+        uninstall.Enabled = false;
+        browse.Enabled = false;
+        channelPicker.Enabled = false;
+        status.Text = "Uninstalling Nexora…";
+        status.ForeColor = Color.FromArgb(218, 190, 255);
+        try {
+            await Task.Run(() => UninstallNexora(selected));
+            status.Text = "Nexora removed. Settings and themes were kept.";
+            status.ForeColor = Color.FromArgb(106, 222, 177);
+            uninstall.Text = "Uninstalled ✓";
+            uninstall.Enabled = false;
+            install.Enabled = true;
+            browse.Enabled = true;
+            channelPicker.Enabled = true;
+        } catch (Exception exception) {
+            status.Text = exception.Message;
+            status.ForeColor = Color.FromArgb(255, 150, 163);
+            install.Enabled = true;
+            uninstall.Enabled = true;
+            browse.Enabled = true;
+            channelPicker.Enabled = true;
+        }
+    };
+
+    content.Controls.AddRange([label, help, channelPicker, browse, notice, launch, status, install, uninstall]);
     form.Controls.AddRange([content, header]);
     Application.Run(form);
 }
@@ -296,9 +371,21 @@ static void WriteEmbeddedAsar(string targetPath) {
     File.Move(temporaryPath, targetPath, true);
 }
 
-static bool IsNexoraStub(string stubIndex, string modAsar) {
-    if (!File.Exists(stubIndex)) return false;
-    return File.ReadAllText(stubIndex).Contains(modAsar, StringComparison.OrdinalIgnoreCase);
+static string? FindNexoraLoader(string resourcesDirectory, string modAsar) {
+    static bool ReferencesNexoraBuild(string path, string buildPath) =>
+        File.Exists(path) && File.ReadAllText(path).Contains(buildPath, StringComparison.OrdinalIgnoreCase);
+
+    var currentLoader = Path.Combine(resourcesDirectory, "app");
+    if (ReferencesNexoraBuild(Path.Combine(currentLoader, "index.js"), modAsar))
+        return currentLoader;
+
+    // Older Nexora installs used resources/app.asar as a folder containing
+    // the loader, instead of the current resources/app/index.js layout.
+    var legacyLoader = Path.Combine(resourcesDirectory, "app.asar");
+    if (ReferencesNexoraBuild(Path.Combine(legacyLoader, "index.js"), modAsar))
+        return legacyLoader;
+
+    return null;
 }
 
 static void PatchDiscord(string resources, string appAsar, string backupAsar, string appDirectory, string stubIndex, string modAsar) {
