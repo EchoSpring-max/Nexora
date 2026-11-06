@@ -1,0 +1,47 @@
+.eq-custom-typing-indicator-picker-button {
+    display: inline-flex;
+    min-width: 170px;
+    height: 48px;
+    align-items: center;
+    gap: 12px;
+    padding: 0 14px 0 8px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--interactive-text-default);
+    background: var(--background-surface-higher);
+    cursor: pointer;
+    transition: border-color 120ms ease, background-color 120ms ease, transform 120ms ease;
+}
+
+.eq-custom-typing-indicator-picker-button:hover {
+    border-color: var(--border-strong);
+    color: var(--interactive-text-hover);
+    background: var(--background-surface-highest);
+    transform: translateY(-1px);
+}
+
+.eq-custom-typing-indicator-preview {
+    display: flex;
+    width: 36px;
+    height: 36px;
+    flex: 0 0 36px;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background: var(--background-base-lower);
+}
+
+.eq-custom-typing-indicator-preview-image {
+    width: 30px;
+    height: 30px;
+    object-fit: contain;
+}
+
+.eq-custom-typing-indicator-preview-unicode {
+    font-size: 27px;
+    line-height: 1;
+}
+
+.eq-custom-typing-indicator-picker-label {
+    font-weight: 600;
+}

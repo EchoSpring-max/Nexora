@@ -1,19 +1,48 @@
 /*
- * Nexora, a Discord client mod
+ * Vencord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
+
+import "./style.css";
 
 import { definePluginSettings } from "@api/Settings";
 import { Button } from "@components/Button";
 import { NexoraDevs } from "@utils/constants";
-import definePlugin, { OptionType } from "@utils/types";
-import { FluxDispatcher, React, RestAPI } from "@webpack/common";
+import { classNameFactory } from "@utils/css";
+import definePlugin, { OptionType, type PluginSettingComponentProps } from "@utils/types";
+import type { Channel } from "@vencord/discord-types";
+import { findComponentByCodeLazy } from "@webpack";
+import { ChannelStore, FluxDispatcher, IconUtils, Popout, React, RestAPI, SelectedChannelStore, useRef, useState, useStateFromStores } from "@webpack/common";
 
 type Emoji = {
     id?: string;
     name: string;
     animated?: boolean;
 };
+
+type EmojiSelectPayload = {
+    id?: string | null;
+    name?: string | null;
+    optionallyDiverseSequence?: string;
+    animated?: boolean;
+};
+
+type ReactionEmojiPickerProps = {
+    channel?: Channel | null;
+    closePopout(): void;
+    onSelectEmoji(selection: {
+        emoji: EmojiSelectPayload | null;
+        willClose: boolean;
+    }): void;
+};
+
+const cl = classNameFactory("eq-custom-typing-indicator-");
+const ReactionEmojiPicker = findComponentByCodeLazy<ReactionEmojiPickerProps>(
+    "showAddEmojiButton:",
+    "pickerIntention:",
+    "messageId:"
+);
 
 const statusOptions = [
     { label: "is yapping…", value: 1, default: true },
@@ -34,21 +63,24 @@ const animationOptions = [
 
 const settings = definePluginSettings({
     emojiOne: {
-        type: OptionType.STRING,
+        type: OptionType.COMPONENT,
         displayName: "First emoji",
-        description: "A Unicode emoji, or a Discord custom emoji copied as <:name:id>.",
+        description: "Choose a standard emoji or an emoji from a server you can access.",
+        component: FirstEmojiPicker,
         default: "✨"
     },
     emojiTwo: {
-        type: OptionType.STRING,
+        type: OptionType.COMPONENT,
         displayName: "Second emoji",
-        description: "Use a different emoji that you can use in Discord.",
+        description: "Choose a different standard or server emoji.",
+        component: SecondEmojiPicker,
         default: "💜"
     },
     emojiThree: {
-        type: OptionType.STRING,
+        type: OptionType.COMPONENT,
         displayName: "Third emoji",
-        description: "Use a different emoji that you can use in Discord.",
+        description: "Choose one more standard or server emoji.",
+        component: ThirdEmojiPicker,
         default: "🌙"
     },
     animation: {
@@ -73,14 +105,99 @@ const settings = definePluginSettings({
     }
 });
 
+function getEmojiValue(emoji: EmojiSelectPayload | null | undefined) {
+    if (!emoji) return "";
+    if (emoji.id && emoji.name)
+        return `<${emoji.animated ? "a" : ""}:${emoji.name}:${emoji.id}>`;
+
+    return emoji.optionallyDiverseSequence?.trim() || emoji.name?.trim() || "";
+}
+
+function EmojiPreview({ value }: { value: string; }) {
+    const emoji = parseEmoji(value);
+
+    if (emoji.id) {
+        return (
+            <img
+                className={cl("preview-image")}
+                src={IconUtils.getEmojiURL({ id: emoji.id, animated: emoji.animated ?? false, size: 48 })}
+                alt={emoji.name || "Server emoji"}
+            />
+        );
+    }
+
+    return <span className={cl("preview-unicode")}>{emoji.name || "?"}</span>;
+}
+
+function EmojiPickerSetting({
+    value,
+    setValue
+}: {
+    value: string;
+    setValue(value: string): void;
+}) {
+    const [selectedEmoji, setSelectedEmoji] = useState(value);
+    const triggerRef = useRef<HTMLDivElement>(null);
+    const channel = useStateFromStores([SelectedChannelStore, ChannelStore], () => {
+        const channelId = SelectedChannelStore.getChannelId();
+        return channelId ? ChannelStore.getChannel(channelId) : null;
+    });
+
+    return (
+        <Popout
+            position="bottom"
+            align="left"
+            targetElementRef={triggerRef}
+            renderPopout={({ closePopout }) => (
+                <ReactionEmojiPicker
+                    channel={channel}
+                    closePopout={closePopout}
+                    onSelectEmoji={({ emoji, willClose }) => {
+                        const nextValue = getEmojiValue(emoji);
+                        if (nextValue) {
+                            setSelectedEmoji(nextValue);
+                            setValue(nextValue);
+                        }
+                        if (willClose) closePopout();
+                    }}
+                />
+            )}
+        >
+            {popoutProps => (
+                <div
+                    {...popoutProps}
+                    ref={triggerRef}
+                    className={cl("picker-button")}
+                >
+                    <span className={cl("preview")}><EmojiPreview value={selectedEmoji} /></span>
+                    <span className={cl("picker-label")}>Choose emoji</span>
+                </div>
+            )}
+        </Popout>
+    );
+}
+
+function FirstEmojiPicker({ setValue }: PluginSettingComponentProps) {
+    return <EmojiPickerSetting value={settings.store.emojiOne} setValue={setValue} />;
+}
+
+function SecondEmojiPicker({ setValue }: PluginSettingComponentProps) {
+    return <EmojiPickerSetting value={settings.store.emojiTwo} setValue={setValue} />;
+}
+
+function ThirdEmojiPicker({ setValue }: PluginSettingComponentProps) {
+    return <EmojiPickerSetting value={settings.store.emojiThree} setValue={setValue} />;
+}
+
 function parseEmoji(value: string): Emoji {
     const emoji = value.trim();
-    const customEmoji = emoji.match(/^<(a?):[^:>]+:(\d+)>$/);
+    const customEmoji = emoji.match(/^<(a?):([^:>]+):(\d+)>$/)
+        ?? emoji.match(/^(a?):?([^:>]+):(\d+)$/);
 
     if (customEmoji) {
         return {
-            id: customEmoji[2],
-            name: "",
+            id: customEmoji[3],
+            name: customEmoji[2],
             animated: customEmoji[1] === "a"
         };
     }

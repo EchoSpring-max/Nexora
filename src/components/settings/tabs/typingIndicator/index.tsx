@@ -1,7 +1,10 @@
 /*
- * Nexora, a Discord client mod
+ * Vencord, a Discord client mod
+ * Copyright (c) 2026 Vendicated and contributors
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
+
+import "./style.css";
 
 import { useSettings } from "@api/Settings";
 import { Button } from "@components/Button";
@@ -10,8 +13,34 @@ import { Heading } from "@components/Heading";
 import { Notice } from "@components/Notice";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsTab, wrapTab } from "@components/settings/tabs/BaseTab";
+import { classNameFactory } from "@utils/css";
 import { Margins } from "@utils/margins";
-import { FluxDispatcher, React, RestAPI, Select, TextInput, useState } from "@webpack/common";
+import type { Channel } from "@vencord/discord-types";
+import { findComponentByCodeLazy } from "@webpack";
+import { ChannelStore, FluxDispatcher, IconUtils, Popout, React, RestAPI, Select, SelectedChannelStore, useRef, useState, useStateFromStores } from "@webpack/common";
+
+type EmojiSelectPayload = {
+    id?: string | null;
+    name?: string | null;
+    optionallyDiverseSequence?: string;
+    animated?: boolean;
+};
+
+type ReactionEmojiPickerProps = {
+    channel?: Channel | null;
+    closePopout(): void;
+    onSelectEmoji(selection: {
+        emoji: EmojiSelectPayload | null;
+        willClose: boolean;
+    }): void;
+};
+
+const cl = classNameFactory("vc-typing-indicator-picker-");
+const ReactionEmojiPicker = findComponentByCodeLazy<ReactionEmojiPickerProps>(
+    "showAddEmojiButton:",
+    "pickerIntention:",
+    "messageId:"
+);
 
 const statusOptions = [
     { label: "is yapping…", value: 1 },
@@ -32,11 +61,93 @@ const animationOptions = [
 
 function parseEmoji(value: string) {
     const emoji = value.trim();
-    const customEmoji = emoji.match(/^<(a?):[^:>]+:(\d+)>$/);
+    const customEmoji = emoji.match(/^<(a?):([^:>]+):(\d+)>$/)
+        ?? emoji.match(/^(a?):?([^:>]+):(\d+)$/);
 
     return customEmoji
-        ? { custom_emoji_id: customEmoji[2] }
+        ? { custom_emoji_id: customEmoji[3] }
         : { unicode_emoji: emoji };
+}
+
+function getEmojiValue(emoji: EmojiSelectPayload | null | undefined) {
+    if (!emoji) return "";
+    if (emoji.id && emoji.name)
+        return `<${emoji.animated ? "a" : ""}:${emoji.name}:${emoji.id}>`;
+
+    return emoji.optionallyDiverseSequence?.trim() || emoji.name?.trim() || "";
+}
+
+function EmojiPreview({ value }: { value: string; }) {
+    const emoji = value.trim();
+    const customEmoji = emoji.match(/^<(a?):([^:>]+):(\d+)>$/)
+        ?? emoji.match(/^(a?):?([^:>]+):(\d+)$/);
+
+    if (customEmoji) {
+        return (
+            <img
+                className={cl("image")}
+                src={IconUtils.getEmojiURL({ id: customEmoji[3], animated: customEmoji[1] === "a", size: 48 })}
+                alt={customEmoji[2]}
+            />
+        );
+    }
+
+    return <span className={cl("unicode")}>{emoji || "?"}</span>;
+}
+
+function EmojiPickerField({
+    label,
+    value,
+    onChange
+}: {
+    label: string;
+    value: string;
+    onChange(value: string): void;
+}) {
+    const [selectedEmoji, setSelectedEmoji] = useState(value);
+    const triggerRef = useRef<HTMLDivElement>(null);
+    const channel = useStateFromStores([SelectedChannelStore, ChannelStore], () => {
+        const channelId = SelectedChannelStore.getChannelId();
+        return channelId ? ChannelStore.getChannel(channelId) : null;
+    });
+
+    return (
+        <Popout
+            position="bottom"
+            align="left"
+            targetElementRef={triggerRef}
+            renderPopout={({ closePopout }) => (
+                <ReactionEmojiPicker
+                    channel={channel}
+                    closePopout={closePopout}
+                    onSelectEmoji={({ emoji, willClose }) => {
+                        const nextValue = getEmojiValue(emoji);
+                        if (nextValue) {
+                            setSelectedEmoji(nextValue);
+                            onChange(nextValue);
+                        }
+                        if (willClose) closePopout();
+                    }}
+                />
+            )}
+        >
+            {popoutProps => (
+                <div
+                    {...popoutProps}
+                    ref={triggerRef}
+                    className={cl("field")}
+                    role="button"
+                    aria-label={`${label}: choose emoji`}
+                >
+                    <span className={cl("preview")}><EmojiPreview value={selectedEmoji} /></span>
+                    <span>
+                        <span className={cl("label")}>{label}</span>
+                        <span className={cl("hint")}>Standard and server emoji</span>
+                    </span>
+                </div>
+            )}
+        </Popout>
+    );
 }
 
 function TypingIndicatorTab() {
@@ -102,14 +213,12 @@ function TypingIndicatorTab() {
 
             <Heading>Emojis</Heading>
             <Paragraph className={Margins.bottom8}>
-                Select three different Unicode emojis, or paste a custom Discord emoji as <code>&lt;:name:id&gt;</code>.
+                Select three different emojis using Discord's picker. Standard emoji and emoji from servers you can access are supported.
             </Paragraph>
-            <TextInput value={emojiOne} placeholder="First emoji" onChange={value => { typingSettings.emojiOne = value; }} />
-            <div className={Margins.top8}>
-                <TextInput value={emojiTwo} placeholder="Second emoji" onChange={value => { typingSettings.emojiTwo = value; }} />
-            </div>
-            <div className={Margins.top8}>
-                <TextInput value={emojiThree} placeholder="Third emoji" onChange={value => { typingSettings.emojiThree = value; }} />
+            <div className={cl("grid")}>
+                <EmojiPickerField label="First emoji" value={emojiOne} onChange={value => { typingSettings.emojiOne = value; }} />
+                <EmojiPickerField label="Second emoji" value={emojiTwo} onChange={value => { typingSettings.emojiTwo = value; }} />
+                <EmojiPickerField label="Third emoji" value={emojiThree} onChange={value => { typingSettings.emojiThree = value; }} />
             </div>
 
             <Divider className={Margins.top20} />

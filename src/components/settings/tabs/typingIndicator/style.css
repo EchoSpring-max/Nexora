@@ -1,0 +1,73 @@
+.vc-typing-indicator-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.vc-typing-indicator-picker-field {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    color: var(--interactive-text-default);
+    background: var(--background-surface-higher);
+    cursor: pointer;
+    transition: border-color 120ms ease, background-color 120ms ease, transform 120ms ease;
+}
+
+.vc-typing-indicator-picker-field:hover {
+    border-color: var(--border-strong);
+    color: var(--interactive-text-hover);
+    background: var(--background-surface-highest);
+    transform: translateY(-1px);
+}
+
+.vc-typing-indicator-picker-preview {
+    display: flex;
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    background: var(--background-base-lower);
+}
+
+.vc-typing-indicator-picker-image {
+    width: 34px;
+    height: 34px;
+    object-fit: contain;
+}
+
+.vc-typing-indicator-picker-unicode {
+    font-size: 29px;
+    line-height: 1;
+}
+
+.vc-typing-indicator-picker-label,
+.vc-typing-indicator-picker-hint {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vc-typing-indicator-picker-label {
+    color: var(--text-strong);
+    font-weight: 650;
+}
+
+.vc-typing-indicator-picker-hint {
+    margin-top: 2px;
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+@media (width <= 760px) {
+    .vc-typing-indicator-picker-grid {
+        grid-template-columns: 1fr;
+    }
+}
