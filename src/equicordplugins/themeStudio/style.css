@@ -137,6 +137,37 @@ body::after {
     color: #fff;
 }
 
+:is([class^="bar_"], [class*=" bar_"]):has(> :is([class^="leading_"], [class*=" leading_"])):has(> :is([class^="trailing_"], [class*=" trailing_"])) :is(
+    [class^="winButton_"],
+    [class*=" winButton_"],
+    [aria-label="Minimize"],
+    [aria-label="Maximize"],
+    [aria-label="Close"]
+) {
+    color: #b5bac1 !important;
+}
+
+:is([class^="bar_"], [class*=" bar_"]):has(> :is([class^="leading_"], [class*=" leading_"])):has(> :is([class^="trailing_"], [class*=" trailing_"])) :is(
+    [class^="winButton_"],
+    [class*=" winButton_"],
+    [aria-label="Minimize"],
+    [aria-label="Maximize"],
+    [aria-label="Close"]
+) :is(svg, path) {
+    color: inherit !important;
+    fill: currentcolor !important;
+}
+
+:is([class^="bar_"], [class*=" bar_"]):has(> :is([class^="leading_"], [class*=" leading_"])):has(> :is([class^="trailing_"], [class*=" trailing_"])) :is(
+    [class^="winButton_"],
+    [class*=" winButton_"],
+    [aria-label="Minimize"],
+    [aria-label="Maximize"],
+    [aria-label="Close"]
+):hover {
+    color: #fff !important;
+}
+
 /* Tooltips need their own opaque-enough surface so sidebar labels do not look clipped. */
 :is([class^="tooltip_"], [class*=" tooltip_"]) {
     z-index: 10000;
