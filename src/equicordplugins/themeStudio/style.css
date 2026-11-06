@@ -194,7 +194,6 @@ body::after {
 :is([class^="sidebarList"], [class*=" sidebarList"]),
 :is([class^="chatContent_"], [class*=" chatContent_"]),
 :is([class^="membersWrap_"], [class*=" membersWrap_"]),
-:is([class^="panels_"], [class*=" panels_"]),
 :is([class^="peopleColumn_"], [class*=" peopleColumn_"]),
 :is([class^="nowPlayingColumn_"], [class*=" nowPlayingColumn_"]) {
     overflow: clip;
@@ -203,6 +202,40 @@ body::after {
     background: var(--nts-surface);
     box-shadow: 0 12px 36px rgb(0 0 0 / 20%);
     backdrop-filter: blur(var(--nts-blur)) saturate(1.18);
+}
+
+/* Discord paints one large dark slab behind the entire left side. Keep the layout,
+ * but let the wallpaper show between the individual glass pieces. */
+:is([class^="sidebar_"], [class*=" sidebar_"]):has(> nav[aria-label="Servers sidebar"]) {
+    overflow: visible !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+:is([class^="sidebar_"], [class*=" sidebar_"]):has(> nav[aria-label="Servers sidebar"])::before,
+:is([class^="sidebar_"], [class*=" sidebar_"]):has(> nav[aria-label="Servers sidebar"])::after {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+nav[aria-label="Servers sidebar"] {
+    overflow: clip;
+    border: 1px solid color-mix(in srgb, var(--nts-text) 8%, transparent);
+    border-radius: 0;
+    background: var(--nts-surface) !important;
+    box-shadow: none;
+    backdrop-filter: blur(var(--nts-blur)) saturate(1.18);
+}
+
+:is([class^="panels_"], [class*=" panels_"]) {
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent !important;
+    box-shadow: none;
+    backdrop-filter: none;
 }
 
 /* Treat Home/Friends as one rounded glass window, then soften its internal columns. */
@@ -242,12 +275,20 @@ body::after {
     overflow: clip;
     margin: 8px 8px 0;
     border: 1px solid color-mix(in srgb, var(--nts-text) 9%, transparent);
-    border-radius: calc(var(--nts-radius) * 0.78);
+    border-radius: 0;
+    background: var(--nts-surface);
+    box-shadow: none;
+    backdrop-filter: blur(var(--nts-blur)) saturate(1.16);
 }
 
 :is([class^="panels_"], [class*=" panels_"]) > :last-child {
     overflow: clip;
-    border-radius: 0 0 calc(var(--nts-radius) - 1px) calc(var(--nts-radius) - 1px);
+    margin: 8px;
+    border: 1px solid color-mix(in srgb, var(--nts-text) 9%, transparent);
+    border-radius: 0;
+    background-color: var(--nts-surface);
+    box-shadow: none;
+    backdrop-filter: blur(var(--nts-blur)) saturate(1.16);
 }
 
 /* Discord gives these inner Home/Friends layers their own fills; clear them so the glass parent can work. */
@@ -260,14 +301,16 @@ body::after {
 }
 
 :is([class^="base_"], [class*=" base_"]) > :is([class^="content_"], [class*=" content_"]) {
+    min-width: 0;
+    overflow-x: clip;
     gap: var(--nts-spacing);
     padding: var(--nts-spacing);
 }
 
 :is([class^="sidebarList"], [class*=" sidebarList"]) {
     width: var(--nts-channel-width);
-    border-left: 0 !important;
-    border-radius: 0 var(--nts-radius) var(--nts-radius) 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none;
 }
 
 /* Give the server icons breathing room below Discord's desktop title bar. */
