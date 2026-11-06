@@ -45,7 +45,7 @@ import {
     useStateFromStores,
 } from "@webpack/common";
 
-import { getOpenPopoutWindowKeys, getPersistedPopoutChannelIds, getPopoutWindowKey, isPopoutWindowOpen, settings, SidebarStore, syncPersistedPopoutWindows } from "./store";
+import { getOpenPopoutWindowKeys, getPersistedPopoutChannelIds, getPopoutWindowKey, isPopoutWindowOpen, setAlwaysOnTopForOpenPopouts, settings, SidebarStore, syncPersistedPopoutWindows } from "./store";
 import style from "./styles.css?managed";
 
 const cl = classNameFactory("vc-sidebar-chat-");
@@ -204,7 +204,7 @@ function openPopout(channelId: string, syncPersistence = true) {
         }
     );
 
-    PopoutActions.setAlwaysOnTop(windowKey, settings.store.popoutAlwaysOnTop);
+    PopoutActions.setAlwaysOnTop(windowKey, false);
     if (syncPersistence && !restoringPersistedPopouts) {
         syncPersistedPopoutWindows();
     }
@@ -383,6 +383,8 @@ export default definePlugin({
     },
 
     async start() {
+        // Clear always-on-top from popouts created by older versions of the plugin.
+        setAlwaysOnTopForOpenPopouts(false);
         restorePersistedPopouts();
     },
 

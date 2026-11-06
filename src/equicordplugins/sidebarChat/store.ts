@@ -39,14 +39,6 @@ export const settings = definePluginSettings({
         default: [] as string[],
         hidden: true
     },
-    popoutAlwaysOnTop: {
-        type: OptionType.BOOLEAN,
-        description: "Keep popout chat windows above all others.",
-        default: true,
-        onChange: value => {
-            setAlwaysOnTopForOpenPopouts(value);
-        }
-    },
 });
 
 export const SidebarStore = proxyLazy(() => {
