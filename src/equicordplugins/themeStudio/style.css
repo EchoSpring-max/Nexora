@@ -118,11 +118,57 @@ body::after {
 :is([class^="panels_"], [class*=" panels_"]),
 :is([class^="peopleColumn_"], [class*=" peopleColumn_"]),
 :is([class^="nowPlayingColumn_"], [class*=" nowPlayingColumn_"]) {
+    overflow: clip;
     border: 1px solid color-mix(in srgb, var(--nts-text) 8%, transparent);
     border-radius: var(--nts-radius);
     background: var(--nts-surface);
     box-shadow: 0 12px 36px rgb(0 0 0 / 20%);
     backdrop-filter: blur(var(--nts-blur)) saturate(1.18);
+}
+
+/* Treat Home/Friends as one rounded glass window, then soften its internal columns. */
+:is([class^="container_"], [class*=" container_"]):has(> :is([class^="tabBody_"], [class*=" tabBody_"])) {
+    overflow: clip;
+    border: 1px solid color-mix(in srgb, var(--nts-text) 8%, transparent);
+    border-radius: var(--nts-radius);
+    background: color-mix(in srgb, var(--nts-surface-color) 36%, transparent);
+    box-shadow: 0 12px 36px rgb(0 0 0 / 18%);
+    backdrop-filter: blur(var(--nts-blur)) saturate(1.18);
+}
+
+:is([class^="container_"], [class*=" container_"]):has(> :is([class^="tabBody_"], [class*=" tabBody_"])) > :is([class^="container_"], [class*=" container_"]) {
+    border-bottom: 1px solid color-mix(in srgb, var(--nts-text) 8%, transparent);
+    background: color-mix(in srgb, var(--nts-surface-color) 28%, transparent);
+}
+
+:is([class^="tabBody_"], [class*=" tabBody_"]) {
+    gap: var(--nts-spacing);
+    padding: var(--nts-spacing);
+    background: transparent !important;
+}
+
+:is([class^="peopleColumn_"], [class*=" peopleColumn_"]),
+:is([class^="nowPlayingColumn_"], [class*=" nowPlayingColumn_"]) {
+    border-radius: calc(var(--nts-radius) * 0.82);
+}
+
+:is([class^="searchBar_"], [class*=" searchBar_"]),
+:is([class^="searchBarComponent_"], [class*=" searchBarComponent_"]),
+:is([class^="search_"], [class*=" search_"]) > :is([class^="searchBar_"], [class*=" searchBar_"]) {
+    border-radius: calc(var(--nts-radius) * 0.7) !important;
+}
+
+/* Clip quest and account-panel artwork to the same soft silhouette. */
+:is([class^="panels_"], [class*=" panels_"]) > :is([class^="questProgressWrapper_"], [class*=" questProgressWrapper_"]) {
+    overflow: clip;
+    margin: 8px 8px 0;
+    border: 1px solid color-mix(in srgb, var(--nts-text) 9%, transparent);
+    border-radius: calc(var(--nts-radius) * 0.78);
+}
+
+:is([class^="panels_"], [class*=" panels_"]) > :last-child {
+    overflow: clip;
+    border-radius: 0 0 calc(var(--nts-radius) - 1px) calc(var(--nts-radius) - 1px);
 }
 
 /* Discord gives these inner Home/Friends layers their own fills; clear them so the glass parent can work. */

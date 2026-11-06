@@ -49,7 +49,7 @@ function refreshStyle() {
         --nts-wallpaper: ${wallpaper};
         --nts-wallpaper-dim: ${s.wallpaperDim / 100};
         --nts-blur: ${Math.round(s.blur * 1.75)}px;
-        --nts-radius: ${s.rounding}px;
+        --nts-radius: ${Math.round(s.rounding * 1.3)}px;
         --nts-spacing: ${s.spacing}px;
         --nts-font-size: ${s.fontSize}px;
         --nts-channel-width: ${s.channelWidth}px;
@@ -175,9 +175,9 @@ export const settings = definePluginSettings({
     },
     rounding: {
         type: OptionType.SLIDER,
-        description: "Corner rounding.",
-        markers: [0, 4, 8, 12, 16, 22, 28],
-        default: 14,
+        description: "Corner rounding for panels, cards and controls.",
+        markers: [0, 6, 12, 16, 20, 28, 40],
+        default: 20,
         stickToMarkers: false,
         ...live
     },
