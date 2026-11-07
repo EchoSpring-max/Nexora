@@ -20,6 +20,7 @@ let variableStyle: HTMLStyleElement | null = null;
 let greeting: HTMLDivElement | null = null;
 let greetingTimer: number | undefined;
 let removeTimer: number | undefined;
+let draftSettings: Record<string, unknown> | null = null;
 
 function isOverlayWindow() {
     return Boolean(window.__OVERLAY__ || window.opener || window.name.startsWith("DISCORD_"));
@@ -32,7 +33,7 @@ function validColor(value: string) {
 function refreshStyle() {
     if (!variableStyle) return;
 
-    const s = settings.store;
+    const s = (draftSettings ?? settings.store) as typeof settings.store;
     document.documentElement.classList.toggle("vc-theme-studio-message-actions", s.enhancedMessageActions);
     document.documentElement.classList.toggle("vc-theme-studio-name-bubbles", s.nameBubbles);
     document.documentElement.classList.toggle("vc-theme-studio-spotify", s.spotifyPanel);
@@ -78,6 +79,11 @@ function refreshStyle() {
     ${s.showShop ? "" : 'a[href="/shop"], a[href^="/shop?"] { display: none !important; }'}
     ${s.showNitro ? "" : 'a[href="/store"], a[href^="/store?"] { display: none !important; }'}
     ${s.customCss}`;
+}
+
+export function setThemeStudioDraft(draft: Record<string, unknown> | null) {
+    draftSettings = draft;
+    refreshStyle();
 }
 
 function showGreeting() {
@@ -410,5 +416,6 @@ export default definePlugin({
         disableStyle(style);
         variableStyle?.remove();
         variableStyle = null;
+        draftSettings = null;
     }
 });

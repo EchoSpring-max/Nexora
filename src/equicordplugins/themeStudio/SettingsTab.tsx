@@ -14,8 +14,9 @@ import { Paragraph } from "@components/Paragraph";
 import { SettingsTab } from "@components/settings/tabs/BaseTab";
 import { OptionComponentMap } from "@components/settings/tabs/plugins/components";
 import { showToast } from "@webpack/common";
+import { useEffect, useState } from "react";
 
-import { settings } from "./index";
+import { setThemeStudioDraft, settings } from "./index";
 
 const SECTIONS = [
     {
@@ -76,18 +77,17 @@ const PRESETS = [
     { name: "AMOLED", accent: "#7c3aed", secondary: "#22d3ee", background: "#000000", surface: "#0a0a0c" }
 ] as const;
 
-function applyPreset(preset: typeof PRESETS[number]) {
-    settings.store.accent = preset.accent;
-    settings.store.accentSecondary = preset.secondary;
-    settings.store.background = preset.background;
-    settings.store.surface = preset.surface;
-    showToast({ text: `${preset.name} applied.`, variant: "success" });
-}
-
 function noop() { }
 
-function ThemeSetting({ id }: { id: keyof typeof settings.def; }) {
-    const pluginSettings = useSettings(["plugins.ThemeStudio.*"]).plugins.ThemeStudio;
+function ThemeSetting({
+    id,
+    draft,
+    onDraftChange
+}: {
+    id: keyof typeof settings.def;
+    draft: Record<string, unknown> & { enabled: boolean };
+    onDraftChange: (id: string, value: unknown) => void;
+}) {
     const setting = settings.def[id];
     const Component = OptionComponentMap[setting.type];
 
@@ -96,8 +96,8 @@ function ThemeSetting({ id }: { id: keyof typeof settings.def; }) {
             <Component
                 id={id}
                 setting={setting}
-                onChange={value => pluginSettings[id] = value}
-                pluginSettings={pluginSettings}
+                onChange={value => onDraftChange(id, value)}
+                pluginSettings={draft}
                 definedSettings={settings}
                 closePluginSettings={noop}
             />
@@ -106,20 +106,73 @@ function ThemeSetting({ id }: { id: keyof typeof settings.def; }) {
 }
 
 export default function ThemeStudioTab() {
-    const colors = settings.use(["accent", "accentSecondary", "background", "surface"]);
+    const pluginSettings = useSettings(["plugins.ThemeStudio.*"]).plugins.ThemeStudio;
+    const [draft, setDraft] = useState<typeof pluginSettings>(() => ({ ...pluginSettings }));
+    const colors = draft as unknown as { accent: string; accentSecondary: string; background: string; surface: string };
+
+    useEffect(() => {
+        setThemeStudioDraft(draft);
+        return () => setThemeStudioDraft(null);
+    }, [draft]);
+
+    function updateDraft(id: string, value: unknown) {
+        setDraft(current => {
+            const next = { ...current, [id]: value };
+            return next;
+        });
+    }
+
+    function applyDraft() {
+        for (const key of Object.keys(settings.def)) pluginSettings[key] = draft[key];
+        setThemeStudioDraft(null);
+        showToast({ text: "Your Theme Studio changes are applied.", variant: "success" });
+    }
+
+    function discardDraft() {
+        const saved = { ...pluginSettings };
+        setDraft(saved);
+        setThemeStudioDraft(null);
+        showToast({ text: "Preview discarded. Saved settings restored.", variant: "success" });
+    }
+
+    function resetToDefaults() {
+        const defaults = {
+            ...pluginSettings,
+            ...Object.fromEntries(
+            Object.entries(settings.def).map(([key, definition]) => [key, definition.default])
+            )
+        };
+        for (const key of Object.keys(settings.def)) pluginSettings[key] = defaults[key];
+        setDraft(defaults);
+        setThemeStudioDraft(defaults);
+        showToast({ text: "Theme Studio settings reset to defaults.", variant: "success" });
+    }
+
+    function applyPreset(preset: typeof PRESETS[number]) {
+        updateDraft("accent", preset.accent);
+        updateDraft("accentSecondary", preset.secondary);
+        updateDraft("background", preset.background);
+        updateDraft("surface", preset.surface);
+        showToast({ text: `${preset.name} preview loaded. Apply to keep it.`, variant: "success" });
+    }
 
     return (
         <SettingsTab>
             <div className="vc-theme-studio-editor-hero">
                 <div>
                     <Heading>Make Discord feel like yours</Heading>
-                    <Paragraph>Every change applies immediately. Start with a preset, then fine-tune only the sections you care about.</Paragraph>
+                    <Paragraph>Changes preview here first. Apply them when they feel right, or discard the preview.</Paragraph>
                 </div>
                 <div className="vc-theme-studio-editor-swatch" style={{
                     background: `linear-gradient(135deg, ${colors.background}, ${colors.surface})`
                 }}>
                     <i style={{ background: colors.accent }} />
                     <i style={{ background: colors.accentSecondary }} />
+                </div>
+                <div className="vc-theme-studio-editor-actions">
+                    <Button variant="secondary" onClick={discardDraft}>Discard preview</Button>
+                    <Button variant="secondary" onClick={resetToDefaults}>Reset to defaults</Button>
+                    <Button onClick={applyDraft}>Apply changes</Button>
                 </div>
             </div>
 
@@ -143,7 +196,7 @@ export default function ThemeStudioTab() {
                         <Paragraph>{section.description}</Paragraph>
                     </div>
                     <div className="vc-plugins-settings">
-                        {section.settings.map(id => <ThemeSetting id={id} key={id} />)}
+                        {section.settings.map(id => <ThemeSetting id={id} key={id} draft={draft} onDraftChange={updateDraft} />)}
                     </div>
                 </section>
             ))}

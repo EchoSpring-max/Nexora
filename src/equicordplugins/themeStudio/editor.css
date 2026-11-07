@@ -6,6 +6,7 @@
 
 .vc-theme-studio-editor-hero {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 24px;
@@ -14,6 +15,14 @@
     border: 1px solid color-mix(in srgb, var(--nts-accent) 30%, var(--border-subtle));
     border-radius: 16px;
     background: linear-gradient(135deg, color-mix(in srgb, var(--nts-accent) 14%, var(--background-surface-high)), color-mix(in srgb, var(--nts-accent-secondary) 8%, var(--background-surface-high)));
+}
+
+.vc-theme-studio-editor-actions {
+    display: flex;
+    flex: 1 0 100%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
 }
 
 .vc-theme-studio-editor-hero h2,
