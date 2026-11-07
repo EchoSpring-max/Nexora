@@ -13,8 +13,7 @@ import { Heading } from "@components/Heading";
 import { Paragraph } from "@components/Paragraph";
 import { SettingsTab } from "@components/settings/tabs/BaseTab";
 import { OptionComponentMap } from "@components/settings/tabs/plugins/components";
-import { showToast } from "@webpack/common";
-import { useEffect, useState } from "react";
+import { showToast, useEffect, useState } from "@webpack/common";
 
 import { setThemeStudioDraft, settings } from "./index";
 
